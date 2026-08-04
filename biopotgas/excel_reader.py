@@ -146,7 +146,13 @@ def read_biopotgas_excel(path: str | Path, sheet_name: str = "01_INPUTS") -> Exc
             continue
 
         name = name_text
-        molar_flow = _to_float(ws.cell(row=row, column=headers["molar_flow"]).value, "molar_flow", row)
+
+        molar_flow_value = ws.cell(row=row, column=headers["molar_flow"]).value
+        if molar_flow_value is None or str(molar_flow_value).strip() == "":
+            raise ValueError(f"Molar flow is required for component {name!r} at row {row}.")
+        
+        molar_flow = _to_float(molar_flow_value, "molar_flow", row)
+        
         degradable = _to_bool(ws.cell(row=row, column=headers["degradable"]).value, default=True)
         input_mode = str(ws.cell(row=row, column=headers["input_mode"]).value or "DATABASE").strip().upper()
 
