@@ -185,13 +185,26 @@ def read_biopotgas_excel(path: str | Path, sheet_name: str = "01_INPUTS") -> Exc
 
 def calculate_from_excel(path: str | Path, sheet_name: str = "01_INPUTS") -> dict:
     data = read_biopotgas_excel(path, sheet_name=sheet_name)
+    warnings: list[str] = []
 
-    carbon_conversion = float(data.global_parameters.get("carbon_conversion", 0.95))
-    include_non_degradable = _to_bool(data.global_parameters.get("include_non_degradable", False), default=False)
-    normal_temperature_C = float(data.global_parameters.get("normal_temperature_C", 0.0))
-    normal_pressure_kPa = float(data.global_parameters.get("normal_pressure_kPa", 101.325))
-    ch4_lhv_mj_per_Nm3 = float(data.global_parameters.get("CH4_LHV_MJ_per_Nm3", 35.8))
-    kwh_per_mj = float(data.global_parameters.get("kWh_per_MJ", 0.277778))
+    def get_global_parameter(name: str, default):
+        if name not in data.global_parameters:
+            warnings.append(
+                f"Global parameter {name!r} not found; using default {default!r}."
+            )
+            return default
+
+        return data.global_parameters[name]
+
+    carbon_conversion = float(get_global_parameter("carbon_conversion", 0.95))
+    include_non_degradable = _to_bool(
+        get_global_parameter("include_non_degradable", False),
+        default=False,
+    )
+    normal_temperature_C = float(get_global_parameter("normal_temperature_C", 0.0))
+    normal_pressure_kPa = float(get_global_parameter("normal_pressure_kPa", 101.325))
+    ch4_lhv_mj_per_Nm3 = float(get_global_parameter("CH4_LHV_MJ_per_Nm3", 35.8))
+    kwh_per_mj = float(get_global_parameter("kWh_per_MJ", 0.277778))
 
     result = calculate_biogas_from_components(
         data.components,
@@ -215,10 +228,9 @@ def calculate_from_excel(path: str | Path, sheet_name: str = "01_INPUTS") -> dic
     output["CH4_LHV_MJ_per_Nm3"] = ch4_lhv_mj_per_Nm3
     output["kWh_per_MJ"] = kwh_per_mj
     output["calculation_status"] = "Calculated successfully"
-    output["warnings"] = ""
+    output["warnings"] = "; ".join(warnings)
 
     return output
-
 
 def write_outputs_to_excel(path: str | Path, output_path: str | Path | None = None, results: dict | None = None) -> Path:
     path = Path(path)

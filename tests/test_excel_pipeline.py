@@ -75,3 +75,33 @@ def test_excel_reader_rejects_empty_molar_flow_in_active_row(tmp_path):
 
     with pytest.raises(ValueError, match="Molar flow is required"):
         read_biopotgas_excel(input_copy)
+
+def test_calculate_from_excel_warns_when_global_parameter_uses_default(tmp_path):
+    input_copy = tmp_path / TEMPLATE_FILE.name
+    shutil.copy2(TEMPLATE_FILE, input_copy)
+
+    workbook = load_workbook(input_copy)
+    worksheet = workbook["01_INPUTS"]
+
+    parameter_name = "carbon_conversion"
+    parameter_row = None
+
+    for row in range(4, 18):
+        value = worksheet[f"A{row}"].value
+        if value is not None and str(value).strip() == parameter_name:
+            parameter_row = row
+            break
+
+    assert parameter_row is not None
+
+    worksheet[f"A{parameter_row}"].value = None
+    worksheet[f"B{parameter_row}"].value = None
+    workbook.save(input_copy)
+
+    results = calculate_from_excel(input_copy)
+
+    assert results["carbon_conversion"] == 0.95
+    assert (
+        "Global parameter 'carbon_conversion' not found; using default 0.95."
+        in results["warnings"]
+    )
