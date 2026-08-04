@@ -214,13 +214,14 @@ def calculate_from_excel(path: str | Path, sheet_name: str = "01_INPUTS") -> dic
     return output
 
 
-def write_outputs_to_excel(path: str | Path, output_path: str | Path | None = None) -> Path:
+def write_outputs_to_excel(path: str | Path, output_path: str | Path | None = None, results: dict | None = None) -> Path:
     path = Path(path)
     if output_path is None:
         output_path = path.with_name(path.stem + "_calculated.xlsx")
     output_path = Path(output_path)
 
-    results = calculate_from_excel(path)
+    if results is None:
+        results = calculate_from_excel(path)
 
     wb = load_workbook(path)
     if "02_OUTPUTS" not in wb.sheetnames:

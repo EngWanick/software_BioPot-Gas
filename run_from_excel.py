@@ -16,7 +16,7 @@ if not INPUT_FILE.exists():
     )
 
 result = calculate_from_excel(INPUT_FILE)
-output_file = write_outputs_to_excel(INPUT_FILE)
+output_file = write_outputs_to_excel(INPUT_FILE, results=result)
 
 print("BioPot-Gas v0.6 result from Excel input")
 print(json.dumps(result, indent=2, ensure_ascii=False))
