@@ -4,7 +4,11 @@ import shutil
 import pytest
 from openpyxl import load_workbook
 
-from biopotgas.excel_reader import calculate_from_excel, read_biopotgas_excel, write_outputs_to_excel
+from biopotgas.excel_reader import (
+    calculate_from_excel,
+    read_biopotgas_excel,
+    write_outputs_to_excel
+)
 
 
 TEMPLATE_FILE = Path("BioPot-Gas_Input_Template_v6_validation_benchmarks.xlsx")
@@ -105,3 +109,42 @@ def test_calculate_from_excel_warns_when_global_parameter_uses_default(tmp_path)
         "Global parameter 'carbon_conversion' not found; using default 0.95."
         in results["warnings"]
     )
+
+def test_excel_reader_requires_element_columns_for_elements_mode(tmp_path):
+    input_copy = tmp_path / TEMPLATE_FILE.name
+    shutil.copy2(TEMPLATE_FILE, input_copy)
+
+    workbook = load_workbook(input_copy)
+    worksheet = workbook["01_INPUTS"]
+
+    header_row = None
+    headers = {}
+
+    for row in range(1, worksheet.max_row + 1):
+        values = [
+            worksheet.cell(row=row, column=column).value
+            for column in range(1, worksheet.max_column + 1)
+        ]
+        normalized = [str(value).strip() if value is not None else "" for value in values]
+
+        if "component_name" in normalized and "molar_flow" in normalized:
+            header_row = row
+            headers = {
+                name: index + 1
+                for index, name in enumerate(normalized)
+                if name
+            }
+            break
+
+    assert header_row is not None
+
+    target_row = header_row + 1
+    worksheet.cell(row=target_row, column=headers["active_row"]).value = True
+    worksheet.cell(row=target_row, column=headers["input_mode"]).value = "ELEMENTS"
+
+    worksheet.delete_cols(headers["C_atoms"])
+
+    workbook.save(input_copy)
+
+    with pytest.raises(ValueError, match="Missing required columns for ELEMENTS"):
+        read_biopotgas_excel(input_copy)

@@ -168,6 +168,15 @@ def read_biopotgas_excel(path: str | Path, sheet_name: str = "01_INPUTS") -> Exc
                 raise ValueError(f"Formula is required for component {name!r} at row {row}.")
             composition = parse_empirical_formula(str(formula).strip())
         elif input_mode == "ELEMENTS":
+            element_colums = {"C_atoms", "H_atoms", "O_atoms", "N_atoms", "S_atoms"}
+            missing_elements_columns = element_colums.difference(headers)
+
+            if missing_elements_columns:
+                raise ValueError(
+                    f"Missing required columns for ELEMENTS input mode: "
+                    f"{sorted(missing_elements_columns)}"
+                )
+            
             composition = ElementalComposition(
                 C=_to_float(ws.cell(row=row, column=headers["C_atoms"]).value, "C_atoms", row),
                 H=_to_float(ws.cell(row=row, column=headers["H_atoms"]).value, "H_atoms", row),
