@@ -277,11 +277,45 @@ def write_outputs_to_excel(path: str | Path, output_path: str | Path | None = No
         wb.create_sheet("02_OUTPUTS")
     ws = wb["02_OUTPUTS"]
 
+    output_rows: dict[str, int] = {}
+
     for row in range(1, ws.max_row + 1):
         key = ws.cell(row=row, column=1).value
         if key is None:
             continue
+
         key = str(key).strip()
+        if key == "":
+            continue
+
+        output_rows[key] = row
+
+    unknown_output_keys = sorted(set(output_rows).difference(results))
+    unwritten_result_keys = sorted(set(results).difference(output_rows))
+
+    output_warnings: list[str] = []
+    if results.get("warnings"):
+        output_warnings.append(str(results["warnings"]))
+
+    if unwritten_result_keys:
+        output_warnings.append(
+            "Calculated result keys not written to 02_OUTPUTS: "
+            + ", ".join(unwritten_result_keys)
+            + "."
+        )
+
+    if unknown_output_keys:
+        output_warnings.append(
+            "02_OUTPUTS keys not found in calculated results: "
+            + ", ".join(unknown_output_keys)
+            + "."
+        )
+
+    if output_warnings:
+        results = dict(results)
+        results["warnings"] = "; ".join(output_warnings)
+
+    for key, row in output_rows.items():
         if key in results:
             ws.cell(row=row, column=2).value = results[key]
 

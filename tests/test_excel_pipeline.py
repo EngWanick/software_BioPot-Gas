@@ -230,3 +230,32 @@ def test_excel_validation_cleanup_uses_existing_sheet_extent(tmp_path):
 
     assert output_validation.cell(row=stale_row, column=1).value is None
     assert output_validation.cell(row=stale_row, column=11).value is None
+
+def test_excel_writer_warns_about_output_template_key_mismatches(tmp_path):
+    input_copy = tmp_path / TEMPLATE_FILE.name
+    output_file = tmp_path / "calculated_output.xlsx"
+    shutil.copy2(TEMPLATE_FILE, input_copy)
+
+    workbook = load_workbook(input_copy)
+    worksheet = workbook["02_OUTPUTS"]
+
+    extra_row = worksheet.max_row + 1
+    worksheet.cell(row=extra_row, column=1).value = "unknown_output_key"
+    workbook.save(input_copy)
+
+    results = calculate_from_excel(input_copy)
+    write_outputs_to_excel(input_copy, output_path=output_file, results=results)
+
+    output_workbook = load_workbook(output_file)
+    output_sheet = output_workbook["02_OUTPUTS"]
+
+    warnings_value = None
+    for row in range(1, output_sheet.max_row + 1):
+        if output_sheet.cell(row=row, column=1).value == "warnings":
+            warnings_value = output_sheet.cell(row=row, column=2).value
+            break
+
+    assert warnings_value is not None
+    assert "Calculated result keys not written to 02_OUTPUTS" in warnings_value
+    assert "02_OUTPUTS keys not found in calculated results" in warnings_value
+    assert "unknown_output_key" in warnings_value
