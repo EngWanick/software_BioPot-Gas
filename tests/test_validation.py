@@ -77,3 +77,16 @@ def test_compare_experimental_to_theoretical_classifies_efficiency_above_100():
     assert result["validation_status"] == (
         "Verificar base experimental ou composição de entrada"
     )
+
+def test_compare_experimental_to_theoretical_warns_about_invalid_experimental_values():
+    result = compare_experimental_to_theoretical(
+        experimental_ch4_nm3="abc",
+        experimental_biogas_nm3=200.0,
+        experimental_ch4_percent=50.0,
+        theoretical_ch4_nm3=100.0,
+        theoretical_biogas_nm3=200.0,
+    )
+
+    assert result["absolute_error_CH4_Nm3"] is None
+    assert result["conversion_efficiency_percent"] is None
+    assert "Invalid experimental_CH4_Nm3 value ignored: 'abc'." in result["warning"]
