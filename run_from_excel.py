@@ -1,4 +1,6 @@
+from datetime import datetime, timezone
 from pathlib import Path
+import hashlib
 import json
 
 from biopotgas.excel_reader import calculate_from_excel, write_outputs_to_excel
@@ -19,14 +21,30 @@ def resolve_input_file() -> Path:
         )
     return input_file
 
+def file_sha256(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as file:
+        for chunk in iter(lambda: file.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
 def main() -> None:
     input_file = resolve_input_file()
 
     result = calculate_from_excel(input_file)
     output_file = write_outputs_to_excel(input_file, results=result)
 
+    result_for_print = dict(result)
+    result_for_print["_run_metadata"] = {
+        "input_path": str(input_file.resolve()),
+        "input_sha256": file_sha256(input_file),
+        "output_path": str(output_file.resolve()),
+        "run_timestamp_utc": datetime.now(timezone.utc).isoformat(),
+        "biopotgas_version": "0.6.0",
+}
+
     print("BioPot-Gas v0.6 result from Excel input")
-    print(json.dumps(result, indent=2, ensure_ascii=False))
+    print(json.dumps(result_for_print, indent=2, ensure_ascii=False))
     print(f"Calculated workbook saved as: {output_file}")
 
 if __name__ == "__main__":
