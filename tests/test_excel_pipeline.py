@@ -36,6 +36,11 @@ def test_excel_pipeline_generates_calculated_workbook_without_overwriting_input(
         "Molar quantities use the same basis as the input molar_flow. "
         "Use kmol as input basis to interpret mass outputs as kg and volume outputs as Nm3."
     )
+    assert results["carbon_conversion_note"] == (
+        "carbon_conversion represents the fraction of degradable organic carbon "
+        "allocated to gas generation. The remaining degradable organic carbon is "
+        "treated as associated with biological cell growth."
+    )
     assert results["calculation_status"] == "Calculated successfully"
     assert results["number_of_components_read"] > 0
     assert results["CH4_Nm3"] > 0

@@ -253,6 +253,11 @@ def calculate_from_excel(path: str | Path, sheet_name: str = "01_INPUTS") -> dic
         "Molar quantities use the same basis as the input molar_flow. "
         "Use kmol as input basis to interpret mass outputs as kg and volume outputs as Nm3."
     )
+    output["carbon_conversion_note"] = (
+        "carbon_conversion represents the fraction of degradable organic carbon "
+        "allocated to gas generation. The remaining degradable organic carbon is "
+        "treated as associated with biological cell growth."
+    )
     output["calculation_status"] = "Calculated successfully"
     output["warnings"] = "; ".join(warnings)
 
