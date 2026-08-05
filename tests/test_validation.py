@@ -40,6 +40,11 @@ def test_compare_experimental_to_theoretical_calculates_signed_errors():
 
     assert result["validation_status"] == "Conversão elevada"
 
+    assert result["validation_basis_note"] == (
+        "conversion_efficiency_percent is calculated as experimental CH4_Nm3 "
+        "divided by theoretical CH4_Nm3. Error fields are signed deviations "
+        "computed as experimental minus theoretical values."
+    )
 
 def test_compare_experimental_to_theoretical_handles_missing_experimental_data():
     result = compare_experimental_to_theoretical(

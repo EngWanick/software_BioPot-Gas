@@ -66,4 +66,9 @@ def compare_experimental_to_theoretical(
         "CH4_percent_deviation": ch4_percent_deviation,
         "validation_status": classify_conversion_efficiency(efficiency),
         "warning": warning,
+        "validation_basis_note": (
+            "conversion_efficiency_percent is calculated as experimental CH4_Nm3 "
+            "divided by theoretical CH4_Nm3. Error fields are signed deviations "
+            "computed as experimental minus theoretical values."
+        ),
     }
