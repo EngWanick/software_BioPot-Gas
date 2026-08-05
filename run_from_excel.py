@@ -40,7 +40,7 @@ def main() -> None:
         "input_sha256": file_sha256(input_file),
         "output_path": str(output_file.resolve()),
         "run_timestamp_utc": datetime.now(timezone.utc).isoformat(),
-        "biopotgas_version": "0.6.0",
+        "biopotgas_version": "0.6.1",
 }
 
     print("BioPot-Gas v0.6 result from Excel input")
