@@ -19,6 +19,7 @@ def test_result_to_dict_converts_molar_outputs_to_report_values():
         co2_mol=1.0,
         nh3_mol=0.0,
         h2s_mol=0.0,
+        h2o_mol=0.0,
         inert_carbon_mol=0.0,
         c_available_mol=2.0,
         c_total_mol=2.0,
@@ -36,6 +37,12 @@ def test_result_to_dict_converts_molar_outputs_to_report_values():
     assert output["CH4_vol_percent"] == pytest.approx(50.0)
     assert output["CH4_mass"] == pytest.approx(16.043)
     assert output["CO2_mass"] == pytest.approx(44.01)
+    assert output["H2O_mol"] == pytest.approx(0.0)
+    assert output["H2O_mass"] == pytest.approx(0.0)
+    assert output["H2O_balance_note"] == (
+        "Positive H2O_mol indicates net water consumption. "
+        "Negative H2O_mol indicates net water production."
+    )
 
 
 def test_result_to_dict_energy_uses_ch4_only():
@@ -44,6 +51,7 @@ def test_result_to_dict_energy_uses_ch4_only():
         co2_mol=9.0,
         nh3_mol=0.0,
         h2s_mol=0.0,
+        h2o_mol=0.0,
         inert_carbon_mol=0.0,
         c_available_mol=10.0,
         c_total_mol=10.0,
@@ -70,6 +78,7 @@ def test_print_result_outputs_report_fields(capsys):
         co2_mol=1.0,
         nh3_mol=0.0,
         h2s_mol=0.0,
+        h2o_mol=0.0,
         inert_carbon_mol=0.0,
         c_available_mol=2.0,
         c_total_mol=2.0,

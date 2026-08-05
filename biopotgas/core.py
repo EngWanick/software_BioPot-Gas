@@ -34,6 +34,7 @@ class BiogasResult:
     co2_mol: float
     nh3_mol: float
     h2s_mol: float
+    h2o_mol: float
     inert_carbon_mol: float
     c_available_mol: float
     c_total_mol: float
@@ -126,6 +127,9 @@ def calculate_biogas_from_elements(
     CH4 = c/2 + h/8 - o/4 - 3n/8 - s/4
     NH3 = n
     H2S = s
+    H2O = c - h/4 - o/2 + 3n/4 + s/2
+
+    Positive H2O means net water consumption. Negative H2O means net water production.
     """
 
     values = [c_mol, h_mol, o_mol, n_mol, s_mol]
@@ -156,6 +160,14 @@ def calculate_biogas_from_elements(
     nh3 = n_mol
     h2s = s_mol
 
+    h2o = (
+        c_available
+        - (h_mol / 4.0)
+        - (o_mol / 2.0)
+        + (3.0 * n_mol / 4.0)
+        + (s_mol / 2.0)
+    )
+
     if validate_non_negative and (ch4 < -1e-12 or co2 < -1e-12):
         raise ValueError(
             "Negative CH4 or CO2 was calculated. Check the elemental composition, "
@@ -170,6 +182,7 @@ def calculate_biogas_from_elements(
         co2_mol=co2,
         nh3_mol=nh3,
         h2s_mol=h2s,
+        h2o_mol=h2o,
         inert_carbon_mol=inert_carbon,
         c_available_mol=c_available,
         c_total_mol=c_mol,

@@ -9,6 +9,7 @@ MOLECULAR_WEIGHTS_KG_PER_KMOL = {
     "NH3": 17.031,
     "H2S": 34.081,
     "C": 12.011,
+    "H2O": 18.015,
 }
 
 
@@ -57,13 +58,19 @@ def result_to_dict(
         "CO2_mol": result.co2_mol,
         "NH3_mol": result.nh3_mol,
         "H2S_mol": result.h2s_mol,
+        "H2O_mol": result.h2o_mol,
         "total_gas_mol": result.total_gas_mol,
         "CH4_mol_fraction": result.methane_fraction_mol,
+        "H2O_balance_note": (
+            "Positive H2O_mol indicates net water consumption. "
+            "Negative H2O_mol indicates net water production."
+        ),
         "inert_carbon_mol": result.inert_carbon_mol,
         "CH4_mass": result.ch4_mol * MOLECULAR_WEIGHTS_KG_PER_KMOL["CH4"],
         "CO2_mass": result.co2_mol * MOLECULAR_WEIGHTS_KG_PER_KMOL["CO2"],
         "NH3_mass": result.nh3_mol * MOLECULAR_WEIGHTS_KG_PER_KMOL["NH3"],
         "H2S_mass": result.h2s_mol * MOLECULAR_WEIGHTS_KG_PER_KMOL["H2S"],
+        "H2O_mass": result.h2o_mol * MOLECULAR_WEIGHTS_KG_PER_KMOL["H2O"],
         "inert_carbon_mass": result.inert_carbon_mol * MOLECULAR_WEIGHTS_KG_PER_KMOL["C"],
         "molar_volume_Nm3_per_kmol": vm,
         "CH4_Nm3": ch4_nm3,

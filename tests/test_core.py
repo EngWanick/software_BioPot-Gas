@@ -50,3 +50,38 @@ def test_invalid_carbon_conversion_raises_value_error(carbon_conversion):
 def test_formula_without_carbon_is_rejected():
     with pytest.raises(ValueError):
         parse_empirical_formula("H2O")
+
+def test_cellulose_buswell_reports_water_consumption():
+    result = calculate_biogas_from_formula(
+        "C6H10O5",
+        molar_flow=1.0,
+        carbon_conversion=1.0,
+    )
+
+    assert result.ch4_mol == pytest.approx(3.0)
+    assert result.co2_mol == pytest.approx(3.0)
+    assert result.h2o_mol == pytest.approx(1.0)
+
+
+def test_glucose_buswell_reports_no_net_water_balance():
+    result = calculate_biogas_from_formula(
+        "C6H12O6",
+        molar_flow=1.0,
+        carbon_conversion=1.0,
+    )
+
+    assert result.ch4_mol == pytest.approx(3.0)
+    assert result.co2_mol == pytest.approx(3.0)
+    assert result.h2o_mol == pytest.approx(0.0)
+
+
+def test_acetic_acid_buswell_reports_no_net_water_balance():
+    result = calculate_biogas_from_formula(
+        "C2H4O2",
+        molar_flow=1.0,
+        carbon_conversion=1.0,
+    )
+
+    assert result.ch4_mol == pytest.approx(1.0)
+    assert result.co2_mol == pytest.approx(1.0)
+    assert result.h2o_mol == pytest.approx(0.0)
