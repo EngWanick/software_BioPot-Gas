@@ -115,7 +115,11 @@ def _format_outputs_sheet(ws) -> None:
 
 def write_outputs_to_excel(input_path: str | Path, output_path: str | Path | None = None, result: Mapping[str, Any] | None = None) -> Path:
     input_path = Path(input_path)
-    output_path = Path(output_path) if output_path else input_path
+
+    if output_path is None:
+        output_path = input_path.with_name(input_path.stem + "_calculated.xlsx")
+
+    output_path = Path(output_path)
 
     if result is None:
         result = calculate_from_excel(input_path)

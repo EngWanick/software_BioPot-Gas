@@ -3,16 +3,28 @@ from __future__ import annotations
 from typing import Any, Dict, Optional
 
 
-def _safe_float(value: Any) -> Optional[float]:
+def _safe_float(value: Any, field_name: str, warning: list[str]) -> Optional[float]:
     if value is None or value == "":
         return None
     try:
         return float(value)
     except Exception:
+        warning.append(f"Invalid {field_name} value ignored: {value!r}.")
         return None
 
 
 def classify_conversion_efficiency(efficiency_percent: Optional[float]) -> str:
+    """Classify CH4 conversion efficiency using internal BioPot-Gas thresholds.
+
+    Thresholds:
+    - < 50%: low experimental conversion
+    - 50% to < 80%: intermediate conversion
+    - 80% to 100%: high conversion
+    - > 100%: review experimental basis, units, or input composition
+
+    These thresholds are internal classification criteria and are not intended
+    to represent external regulatory or universal validation standards.
+    """
     if efficiency_percent is None:
         return "Não calculado"
     if efficiency_percent < 50.0:
@@ -31,9 +43,11 @@ def compare_experimental_to_theoretical(
     theoretical_ch4_nm3: float,
     theoretical_biogas_nm3: float,
 ) -> Dict[str, Any]:
-    exp_ch4 = _safe_float(experimental_ch4_nm3)
-    exp_biogas = _safe_float(experimental_biogas_nm3)
-    exp_ch4_percent = _safe_float(experimental_ch4_percent)
+    warnings: list[str] = []
+
+    exp_ch4 = _safe_float(experimental_ch4_nm3, "experimental_CH4_Nm3", warnings)
+    exp_biogas = _safe_float(experimental_biogas_nm3, "experimental_biogas_Nm3", warnings)
+    exp_ch4_percent = _safe_float(experimental_ch4_percent, "experimental_CH4_percent", warnings)
 
     abs_error_ch4 = rel_error_ch4 = efficiency = None
     if exp_ch4 is not None:
@@ -51,11 +65,12 @@ def compare_experimental_to_theoretical(
     if exp_ch4_percent is not None and theoretical_ch4_percent is not None:
         ch4_percent_deviation = exp_ch4_percent - theoretical_ch4_percent
 
-    warning = ""
     if exp_ch4 is None and exp_biogas is None and exp_ch4_percent is None:
-        warning = "Preencher dados experimentais para validação."
+        warnings.append("Preencher dados experimentais para validação.")
     elif efficiency is not None and efficiency > 100.0:
-        warning = "Eficiência acima de 100%. Verificar base experimental, unidade ou composição informada."
+        warnings.append("Eficiência acima de 100%. Verificar base experimental, unidade ou composição informada.")
+
+    warning = " ".join(warnings)
 
     return {
         "absolute_error_CH4_Nm3": abs_error_ch4,
@@ -66,4 +81,9 @@ def compare_experimental_to_theoretical(
         "CH4_percent_deviation": ch4_percent_deviation,
         "validation_status": classify_conversion_efficiency(efficiency),
         "warning": warning,
+        "validation_basis_note": (
+            "conversion_efficiency_percent is calculated as experimental CH4_Nm3 "
+            "divided by theoretical CH4_Nm3. Error fields are signed deviations "
+            "computed as experimental minus theoretical values."
+        ),
     }

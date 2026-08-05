@@ -18,4 +18,4 @@ from .excel_reader import (
     write_outputs_to_excel,
 )
 
-__version__ = "0.6.0"
+__version__ = "0.6.1"

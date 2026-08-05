@@ -3,6 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Dict, List, Any
+from difflib import get_close_matches
 
 from openpyxl import load_workbook
 
@@ -146,7 +147,13 @@ def read_biopotgas_excel(path: str | Path, sheet_name: str = "01_INPUTS") -> Exc
             continue
 
         name = name_text
-        molar_flow = _to_float(ws.cell(row=row, column=headers["molar_flow"]).value, "molar_flow", row)
+
+        molar_flow_value = ws.cell(row=row, column=headers["molar_flow"]).value
+        if molar_flow_value is None or str(molar_flow_value).strip() == "":
+            raise ValueError(f"Molar flow is required for component {name!r} at row {row}.")
+        
+        molar_flow = _to_float(molar_flow_value, "molar_flow", row)
+        
         degradable = _to_bool(ws.cell(row=row, column=headers["degradable"]).value, default=True)
         input_mode = str(ws.cell(row=row, column=headers["input_mode"]).value or "DATABASE").strip().upper()
 
@@ -155,13 +162,34 @@ def read_biopotgas_excel(path: str | Path, sheet_name: str = "01_INPUTS") -> Exc
         if input_mode == "DATABASE":
             key = name.strip().upper()
             if key not in database:
-                raise KeyError(f"Component {name!r} was not found in 03_COMPONENT_DATABASE.")
+                suggestions = get_close_matches(key, database.keys(), n=3, cutoff=0.6)
+                suggestion_text = (
+                    f" Did you mean: {', '.join(suggestions)}?"
+                    if suggestions
+                    else " No similar component names were found."
+                )
+
+                raise KeyError(
+                    f"Component {name!r} was not found in 03_COMPONENT_DATABASE.{suggestion_text}"
+                    f"{suggestion_text}"
+                )
+            
             composition = database[key]
+            
         elif input_mode == "FORMULA":
             if formula is None or str(formula).strip() == "":
                 raise ValueError(f"Formula is required for component {name!r} at row {row}.")
             composition = parse_empirical_formula(str(formula).strip())
         elif input_mode == "ELEMENTS":
+            element_colums = {"C_atoms", "H_atoms", "O_atoms", "N_atoms", "S_atoms"}
+            missing_elements_columns = element_colums.difference(headers)
+
+            if missing_elements_columns:
+                raise ValueError(
+                    f"Missing required columns for ELEMENTS input mode: "
+                    f"{sorted(missing_elements_columns)}"
+                )
+            
             composition = ElementalComposition(
                 C=_to_float(ws.cell(row=row, column=headers["C_atoms"]).value, "C_atoms", row),
                 H=_to_float(ws.cell(row=row, column=headers["H_atoms"]).value, "H_atoms", row),
@@ -179,13 +207,26 @@ def read_biopotgas_excel(path: str | Path, sheet_name: str = "01_INPUTS") -> Exc
 
 def calculate_from_excel(path: str | Path, sheet_name: str = "01_INPUTS") -> dict:
     data = read_biopotgas_excel(path, sheet_name=sheet_name)
+    warnings: list[str] = []
 
-    carbon_conversion = float(data.global_parameters.get("carbon_conversion", 0.95))
-    include_non_degradable = _to_bool(data.global_parameters.get("include_non_degradable", False), default=False)
-    normal_temperature_C = float(data.global_parameters.get("normal_temperature_C", 0.0))
-    normal_pressure_kPa = float(data.global_parameters.get("normal_pressure_kPa", 101.325))
-    ch4_lhv_mj_per_Nm3 = float(data.global_parameters.get("CH4_LHV_MJ_per_Nm3", 35.8))
-    kwh_per_mj = float(data.global_parameters.get("kWh_per_MJ", 0.277778))
+    def get_global_parameter(name: str, default):
+        if name not in data.global_parameters:
+            warnings.append(
+                f"Global parameter {name!r} not found; using default {default!r}."
+            )
+            return default
+
+        return data.global_parameters[name]
+
+    carbon_conversion = float(get_global_parameter("carbon_conversion", 0.95))
+    include_non_degradable = _to_bool(
+        get_global_parameter("include_non_degradable", False),
+        default=False,
+    )
+    normal_temperature_C = float(get_global_parameter("normal_temperature_C", 0.0))
+    normal_pressure_kPa = float(get_global_parameter("normal_pressure_kPa", 101.325))
+    ch4_lhv_mj_per_Nm3 = float(get_global_parameter("CH4_LHV_MJ_per_Nm3", 35.8))
+    kwh_per_mj = float(get_global_parameter("kWh_per_MJ", 0.277778))
 
     result = calculate_biogas_from_components(
         data.components,
@@ -208,30 +249,73 @@ def calculate_from_excel(path: str | Path, sheet_name: str = "01_INPUTS") -> dic
     output["normal_pressure_kPa"] = normal_pressure_kPa
     output["CH4_LHV_MJ_per_Nm3"] = ch4_lhv_mj_per_Nm3
     output["kWh_per_MJ"] = kwh_per_mj
+    output["molar_basis_note"] = (
+        "Molar quantities use the same basis as the input molar_flow. "
+        "Use kmol as input basis to interpret mass outputs as kg and volume outputs as Nm3."
+    )
+    output["carbon_conversion_note"] = (
+        "carbon_conversion represents the fraction of degradable organic carbon "
+        "allocated to gas generation. The remaining degradable organic carbon is "
+        "treated as associated with biological cell growth."
+    )
     output["calculation_status"] = "Calculated successfully"
-    output["warnings"] = ""
+    output["warnings"] = "; ".join(warnings)
 
     return output
 
-
-def write_outputs_to_excel(path: str | Path, output_path: str | Path | None = None) -> Path:
+def write_outputs_to_excel(path: str | Path, output_path: str | Path | None = None, results: dict | None = None) -> Path:
     path = Path(path)
     if output_path is None:
         output_path = path.with_name(path.stem + "_calculated.xlsx")
     output_path = Path(output_path)
 
-    results = calculate_from_excel(path)
+    if results is None:
+        results = calculate_from_excel(path)
 
     wb = load_workbook(path)
     if "02_OUTPUTS" not in wb.sheetnames:
         wb.create_sheet("02_OUTPUTS")
     ws = wb["02_OUTPUTS"]
 
+    output_rows: dict[str, int] = {}
+
     for row in range(1, ws.max_row + 1):
         key = ws.cell(row=row, column=1).value
         if key is None:
             continue
+
         key = str(key).strip()
+        if key == "":
+            continue
+
+        output_rows[key] = row
+
+    unknown_output_keys = sorted(set(output_rows).difference(results))
+    unwritten_result_keys = sorted(set(results).difference(output_rows))
+
+    output_warnings: list[str] = []
+    if results.get("warnings"):
+        output_warnings.append(str(results["warnings"]))
+
+    if unwritten_result_keys:
+        output_warnings.append(
+            "Calculated result keys not written to 02_OUTPUTS: "
+            + ", ".join(unwritten_result_keys)
+            + "."
+        )
+
+    if unknown_output_keys:
+        output_warnings.append(
+            "02_OUTPUTS keys not found in calculated results: "
+            + ", ".join(unknown_output_keys)
+            + "."
+        )
+
+    if output_warnings:
+        results = dict(results)
+        results["warnings"] = "; ".join(output_warnings)
+
+    for key, row in output_rows.items():
         if key in results:
             ws.cell(row=row, column=2).value = results[key]
 
@@ -259,8 +343,11 @@ def write_outputs_to_excel(path: str | Path, output_path: str | Path | None = No
             ch = _get_header_map(val, calc_header_row)
             output_row = calc_header_row + 1
 
-            for r in range(output_row, output_row + 100):
-                for c in range(1, 11):
+            last_row = max(val.max_row, output_row)
+            last_col = max(val.max_column, 10)
+
+            for r in range(output_row, last_row + 1):
+                for c in range(1, last_col + 1):
                     val.cell(row=r, column=c).value = None
 
             for r in range(header_row + 1, calc_header_row - 1):

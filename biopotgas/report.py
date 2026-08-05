@@ -79,6 +79,11 @@ def result_to_dict(
 
 
 def print_result(result: BiogasResult) -> None:
+    """Print a readable summary for a raw BiogasResult.
+
+    This is a manual/reporting utility and is not used by the Excel pipeline.
+    Use result_to_dict() when structured output is required.
+    """
     data = result_to_dict(result)
     for key, value in data.items():
         if value is None:
