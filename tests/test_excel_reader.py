@@ -63,3 +63,6 @@ def test_calculate_from_excel_reports_net_water_balance(tmp_path):
     assert result["net_water_balance_mol"] == pytest.approx(
         result["water_available_mol"] - result["H2O_mol"]
     )
+    assert result["net_water_balance_mass"] == pytest.approx(
+        result["net_water_balance_mol"] * 18.015
+    )
