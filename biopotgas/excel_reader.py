@@ -309,8 +309,11 @@ def write_outputs_to_excel(path: str | Path, output_path: str | Path | None = No
             ch = _get_header_map(val, calc_header_row)
             output_row = calc_header_row + 1
 
-            for r in range(output_row, output_row + 100):
-                for c in range(1, 11):
+            last_row = max(val.max_row, output_row)
+            last_col = max(val.max_column, 10)
+
+            for r in range(output_row, last_row + 1):
+                for c in range(1, last_col + 1):
                     val.cell(row=r, column=c).value = None
 
             for r in range(header_row + 1, calc_header_row - 1):

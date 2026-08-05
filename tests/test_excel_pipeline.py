@@ -195,3 +195,38 @@ def test_excel_reader_suggests_similar_database_component_for_typo(tmp_path):
 
     with pytest.raises(KeyError, match="Did you mean"):
         read_biopotgas_excel(input_copy)
+
+def test_excel_validation_cleanup_uses_existing_sheet_extent(tmp_path):
+    input_copy = tmp_path / TEMPLATE_FILE.name
+    output_file = tmp_path / "calculated_output.xlsx"
+    shutil.copy2(TEMPLATE_FILE, input_copy)
+
+    workbook = load_workbook(input_copy)
+    worksheet = workbook["04_EXPERIMENTAL_VALIDATION"]
+
+    calc_header_row = None
+    for row in range(1, worksheet.max_row + 1):
+        values = [
+            worksheet.cell(row=row, column=column).value
+            for column in range(1, worksheet.max_column + 1)
+        ]
+        normalized = [str(value).strip() if value is not None else "" for value in values]
+        if "absolute_error_CH4_Nm3" in normalized and "validation_status" in normalized:
+            calc_header_row = row
+            break
+
+    assert calc_header_row is not None
+
+    stale_row = calc_header_row + 150
+    worksheet.cell(row=stale_row, column=1).value = "STALE_SAMPLE"
+    worksheet.cell(row=stale_row, column=11).value = "STALE_VALUE"
+    workbook.save(input_copy)
+
+    results = calculate_from_excel(input_copy)
+    write_outputs_to_excel(input_copy, output_path=output_file, results=results)
+
+    output_workbook = load_workbook(output_file)
+    output_validation = output_workbook["04_EXPERIMENTAL_VALIDATION"]
+
+    assert output_validation.cell(row=stale_row, column=1).value is None
+    assert output_validation.cell(row=stale_row, column=11).value is None
