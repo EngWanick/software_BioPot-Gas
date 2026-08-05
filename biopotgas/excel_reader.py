@@ -170,7 +170,7 @@ def read_biopotgas_excel(path: str | Path, sheet_name: str = "01_INPUTS") -> Exc
                 )
 
                 raise KeyError(
-                    f"Component {name!r} was not found in 03_COMPONENT_DATABASE.{suggestion_text}"
+                    f"Component {name!r} was not found in 03_COMPONENT_DATABASE."
                     f"{suggestion_text}"
                 )
             
@@ -181,8 +181,8 @@ def read_biopotgas_excel(path: str | Path, sheet_name: str = "01_INPUTS") -> Exc
                 raise ValueError(f"Formula is required for component {name!r} at row {row}.")
             composition = parse_empirical_formula(str(formula).strip())
         elif input_mode == "ELEMENTS":
-            element_colums = {"C_atoms", "H_atoms", "O_atoms", "N_atoms", "S_atoms"}
-            missing_elements_columns = element_colums.difference(headers)
+            element_columns = {"C_atoms", "H_atoms", "O_atoms", "N_atoms", "S_atoms"}
+            missing_elements_columns = element_columns.difference(headers)
 
             if missing_elements_columns:
                 raise ValueError(
