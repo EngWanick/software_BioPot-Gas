@@ -249,6 +249,10 @@ def calculate_from_excel(path: str | Path, sheet_name: str = "01_INPUTS") -> dic
     output["normal_pressure_kPa"] = normal_pressure_kPa
     output["CH4_LHV_MJ_per_Nm3"] = ch4_lhv_mj_per_Nm3
     output["kWh_per_MJ"] = kwh_per_mj
+    output["molar_basis_note"] = (
+        "Molar quantities use the same basis as the input molar_flow. "
+        "Use kmol as input basis to interpret mass outputs as kg and volume outputs as Nm3."
+    )
     output["calculation_status"] = "Calculated successfully"
     output["warnings"] = "; ".join(warnings)
 

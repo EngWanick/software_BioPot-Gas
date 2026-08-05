@@ -32,6 +32,10 @@ def test_excel_pipeline_generates_calculated_workbook_without_overwriting_input(
     assert output_file.exists()
     assert input_copy.read_bytes() == original_input_bytes
 
+    assert results["molar_basis_note"] == (
+        "Molar quantities use the same basis as the input molar_flow. "
+        "Use kmol as input basis to interpret mass outputs as kg and volume outputs as Nm3."
+    )
     assert results["calculation_status"] == "Calculated successfully"
     assert results["number_of_components_read"] > 0
     assert results["CH4_Nm3"] > 0
