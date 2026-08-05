@@ -148,3 +148,41 @@ def test_excel_reader_requires_element_columns_for_elements_mode(tmp_path):
 
     with pytest.raises(ValueError, match="Missing required columns for ELEMENTS"):
         read_biopotgas_excel(input_copy)
+
+def test_excel_reader_suggests_similar_database_component_for_typo(tmp_path):
+    input_copy = tmp_path / TEMPLATE_FILE.name
+    shutil.copy2(TEMPLATE_FILE, input_copy)
+
+    workbook = load_workbook(input_copy)
+    worksheet = workbook["01_INPUTS"]
+
+    header_row = None
+    headers = {}
+
+    for row in range(1, worksheet.max_row + 1):
+        values = [
+            worksheet.cell(row=row, column=column).value
+            for column in range(1, worksheet.max_column + 1)
+        ]
+        normalized = [str(value).strip() if value is not None else "" for value in values]
+
+        if "component_name" in normalized and "molar_flow" in normalized:
+            header_row = row
+            headers = {
+                name: index + 1
+                for index, name in enumerate(normalized)
+                if name
+            }
+            break
+
+    assert header_row is not None
+
+    target_row = header_row + 1
+    worksheet.cell(row=target_row, column=headers["active_row"]).value = True
+    worksheet.cell(row=target_row, column=headers["component_name"]).value = "GLUCOS"
+    worksheet.cell(row=target_row, column=headers["input_mode"]).value = "DATABASE"
+
+    workbook.save(input_copy)
+
+    with pytest.raises(KeyError, match="Did you mean"):
+        read_biopotgas_excel(input_copy)

@@ -3,6 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Dict, List, Any
+from difflib import get_close_matches
 
 from openpyxl import load_workbook
 
@@ -161,8 +162,20 @@ def read_biopotgas_excel(path: str | Path, sheet_name: str = "01_INPUTS") -> Exc
         if input_mode == "DATABASE":
             key = name.strip().upper()
             if key not in database:
-                raise KeyError(f"Component {name!r} was not found in 03_COMPONENT_DATABASE.")
+                suggestions = get_close_matches(key, database.keys(), n=3, cutoff=0.6)
+                suggestion_text = (
+                    f" Did you mean: {', '.join(suggestions)}?"
+                    if suggestions
+                    else " No similar component names were found."
+                )
+
+                raise KeyError(
+                    f"Component {name!r} was not found in 03_COMPONENT_DATABASE.{suggestion_text}"
+                    f"{suggestion_text}"
+                )
+            
             composition = database[key]
+            
         elif input_mode == "FORMULA":
             if formula is None or str(formula).strip() == "":
                 raise ValueError(f"Formula is required for component {name!r} at row {row}.")
