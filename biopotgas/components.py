@@ -7,7 +7,6 @@ from .core import ElementalComposition, parse_empirical_formula
 # and anaerobic digestion models. This file can be expanded with the exact
 # component set adopted in each project.
 COMPONENT_FORMULAS = {
-    "WATER": "H2O",
     "GLUCOSE": "C6H12O6",
     "SUCROSE": "C12H22O11",
     "ACETIC_ACID": "C2H4O2",
