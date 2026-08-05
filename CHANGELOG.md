@@ -7,7 +7,7 @@
 - Added baseline tests for core calculations, reports, validation, Excel pipeline, CSV input, component lookup, and report print utility.
 - Added molar-basis metadata to calculation results.
 - Added carbon-conversion model assumption metadata to calculation results.
-- Added validation-basis metadata to experimental validation results.
+- Added validation-basis metadata documenting that current validation error fields are signed deviations.
 - Added warnings for invalid experimental validation values.
 - Added documentation for current model assumptions, operational scope, and known limitations.
 

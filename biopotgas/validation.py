@@ -14,6 +14,17 @@ def _safe_float(value: Any, field_name: str, warning: list[str]) -> Optional[flo
 
 
 def classify_conversion_efficiency(efficiency_percent: Optional[float]) -> str:
+    """Classify CH4 conversion efficiency using internal BioPot-Gas thresholds.
+
+    Thresholds:
+    - < 50%: low experimental conversion
+    - 50% to < 80%: intermediate conversion
+    - 80% to 100%: high conversion
+    - > 100%: review experimental basis, units, or input composition
+
+    These thresholds are internal classification criteria and are not intended
+    to represent external regulatory or universal validation standards.
+    """
     if efficiency_percent is None:
         return "Não calculado"
     if efficiency_percent < 50.0:
