@@ -17,7 +17,7 @@ class ExcelInputData:
     global_parameters: Dict[str, Any]
     components: List[ComponentFlow]
     database: Dict[str, ElementalComposition]
-
+    water_available_mol: float = 0.0
 
 def _to_bool(value: Any, default: bool = True) -> bool:
     if value is None or value == "":
@@ -30,7 +30,6 @@ def _to_bool(value: Any, default: bool = True) -> bool:
     if text in {"false", "0", "no", "não", "nao", "n"}:
         return False
     return default
-
 
 def _to_float(value: Any, field_name: str, row_number: int | None = None) -> float:
     if value is None or value == "":
@@ -46,6 +45,15 @@ def _get_header_map(ws, header_row: int) -> Dict[str, int]:
     values = [ws.cell(row=header_row, column=col).value for col in range(1, ws.max_column + 1)]
     return {str(v).strip(): idx + 1 for idx, v in enumerate(values) if v is not None and str(v).strip()}
 
+def _is_free_water_entry(name: str, formula: Any, input_mode: str) -> bool:
+    name_key = name.strip().upper()
+    formula_key = "" if formula is None else str(formula).strip().upper()
+
+    return (
+        name_key in {"WATER", "H2O", "ÁGUA", "AGUA"}
+        or formula_key == "H2O"
+        or input_mode == "WATER"
+    )
 
 def read_component_database(wb) -> Dict[str, ElementalComposition]:
     if "03_COMPONENT_DATABASE" not in wb.sheetnames:
@@ -122,6 +130,7 @@ def read_biopotgas_excel(path: str | Path, sheet_name: str = "01_INPUTS") -> Exc
 
     components: List[ComponentFlow] = []
     empty_rows = 0
+    water_available_mol = 0.0
 
     for row in range(header_row + 1, ws.max_row + 1):
         name_value = ws.cell(row=row, column=headers["component_name"]).value
@@ -158,6 +167,10 @@ def read_biopotgas_excel(path: str | Path, sheet_name: str = "01_INPUTS") -> Exc
         input_mode = str(ws.cell(row=row, column=headers["input_mode"]).value or "DATABASE").strip().upper()
 
         formula = ws.cell(row=row, column=headers["formula"]).value if "formula" in headers else None
+
+        if _is_free_water_entry(name, formula, input_mode):
+            water_available_mol += molar_flow
+            continue
 
         if input_mode == "DATABASE":
             key = name.strip().upper()
@@ -202,7 +215,12 @@ def read_biopotgas_excel(path: str | Path, sheet_name: str = "01_INPUTS") -> Exc
 
         components.append(ComponentFlow(name=name, molar_flow=molar_flow, composition=composition, degradable=degradable))
 
-    return ExcelInputData(global_parameters=global_parameters, components=components, database=database)
+    return ExcelInputData(
+        global_parameters=global_parameters,
+        components=components,
+        database=database,
+        water_available_mol=water_available_mol,
+        )
 
 
 def calculate_from_excel(path: str | Path, sheet_name: str = "01_INPUTS") -> dict:
@@ -242,6 +260,14 @@ def calculate_from_excel(path: str | Path, sheet_name: str = "01_INPUTS") -> dic
         kwh_per_mj=kwh_per_mj,
     )
 
+    net_water_balance_mol = data.water_available_mol - output["H2O_mol"]
+
+    output["water_available_mol"] = data.water_available_mol
+    output["net_water_balance_mol"] = net_water_balance_mol
+    output["net_water_balance_note"] = (
+        "net_water_balance_mol is calculated as water_available_mol minus H2O_mol. "
+        "Positive values indicate water surplus. Negative values indicate water deficit."
+    )
     output["number_of_components_read"] = len(data.components)
     output["carbon_conversion"] = carbon_conversion
     output["include_non_degradable"] = include_non_degradable
