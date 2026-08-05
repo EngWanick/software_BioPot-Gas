@@ -60,3 +60,30 @@ def test_result_to_dict_energy_uses_ch4_only():
 
     assert output["CH4_Nm3"] == pytest.approx(expected_ch4_nm3)
     assert output["CH4_energy_LHV_MJ"] == pytest.approx(expected_energy_mj)
+
+def test_print_result_outputs_report_fields(capsys):
+    from biopotgas.core import BiogasResult
+    from biopotgas.report import print_result
+
+    result = BiogasResult(
+        ch4_mol=1.0,
+        co2_mol=1.0,
+        nh3_mol=0.0,
+        h2s_mol=0.0,
+        inert_carbon_mol=0.0,
+        c_available_mol=2.0,
+        c_total_mol=2.0,
+        h_total_mol=8.0,
+        o_total_mol=2.0,
+        n_total_mol=0.0,
+        s_total_mol=0.0,
+    )
+
+    print_result(result)
+
+    captured = capsys.readouterr()
+
+    assert "CH4_Nm3" in captured.out
+    assert "CO2_Nm3" in captured.out
+    assert "total_biogas_Nm3" in captured.out
+    assert "CH4_vol_percent" in captured.out
