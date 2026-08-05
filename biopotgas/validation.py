@@ -49,16 +49,36 @@ def compare_experimental_to_theoretical(
     exp_biogas = _safe_float(experimental_biogas_nm3, "experimental_biogas_Nm3", warnings)
     exp_ch4_percent = _safe_float(experimental_ch4_percent, "experimental_CH4_percent", warnings)
 
-    abs_error_ch4 = rel_error_ch4 = efficiency = None
+    signed_error_ch4 = abs_error_ch4 = signed_rel_error_ch4 = rel_error_ch4 = efficiency = None
     if exp_ch4 is not None:
-        abs_error_ch4 = exp_ch4 - theoretical_ch4_nm3
-        rel_error_ch4 = abs_error_ch4 / theoretical_ch4_nm3 * 100.0 if theoretical_ch4_nm3 else None
+        signed_error_ch4 = exp_ch4 - theoretical_ch4_nm3
+        abs_error_ch4 = abs(signed_error_ch4)
+        signed_rel_error_ch4 = (
+            signed_error_ch4 / theoretical_ch4_nm3 * 100.0
+            if theoretical_ch4_nm3
+            else None
+        )
+        rel_error_ch4 = (
+            abs(signed_rel_error_ch4)
+            if signed_rel_error_ch4 is not None
+            else None
+        )
         efficiency = exp_ch4 / theoretical_ch4_nm3 * 100.0 if theoretical_ch4_nm3 else None
 
-    abs_error_biogas = rel_error_biogas = None
+    signed_error_biogas = abs_error_biogas = signed_rel_error_biogas = rel_error_biogas = None
     if exp_biogas is not None:
-        abs_error_biogas = exp_biogas - theoretical_biogas_nm3
-        rel_error_biogas = abs_error_biogas / theoretical_biogas_nm3 * 100.0 if theoretical_biogas_nm3 else None
+        signed_error_biogas = exp_biogas - theoretical_biogas_nm3
+        abs_error_biogas = abs(signed_error_biogas)
+        signed_rel_error_biogas = (
+            signed_error_biogas / theoretical_biogas_nm3 * 100.0
+            if theoretical_biogas_nm3
+            else None
+        )
+        rel_error_biogas = (
+            abs(signed_rel_error_biogas)
+            if signed_rel_error_biogas is not None
+            else None
+        )
 
     theoretical_ch4_percent = theoretical_ch4_nm3 / theoretical_biogas_nm3 * 100.0 if theoretical_biogas_nm3 else None
     ch4_percent_deviation = None
@@ -74,10 +94,14 @@ def compare_experimental_to_theoretical(
 
     return {
         "absolute_error_CH4_Nm3": abs_error_ch4,
+        "signed_error_CH4_Nm3": signed_error_ch4,
         "relative_error_CH4_percent": rel_error_ch4,
+        "signed_relative_error_CH4_percent": signed_rel_error_ch4,
         "conversion_efficiency_percent": efficiency,
         "absolute_error_biogas_Nm3": abs_error_biogas,
+        "signed_error_biogas_Nm3": signed_error_biogas,
         "relative_error_biogas_percent": rel_error_biogas,
+        "signed_relative_error_biogas_percent": signed_rel_error_biogas,
         "CH4_percent_deviation": ch4_percent_deviation,
         "validation_status": classify_conversion_efficiency(efficiency),
         "warning": warning,

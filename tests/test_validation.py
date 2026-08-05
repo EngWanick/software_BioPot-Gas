@@ -31,12 +31,16 @@ def test_compare_experimental_to_theoretical_calculates_signed_errors():
         theoretical_biogas_nm3=200.0,
     )
 
-    assert result["absolute_error_CH4_Nm3"] == pytest.approx(-10.0)
-    assert result["relative_error_CH4_percent"] == pytest.approx(-10.0)
+    assert result["absolute_error_CH4_Nm3"] == pytest.approx(10.0)
+    assert result["signed_error_CH4_Nm3"] == pytest.approx(-10.0)
+    assert result["relative_error_CH4_percent"] == pytest.approx(10.0)
+    assert result["signed_relative_error_CH4_percent"] == pytest.approx(-10.0)
     assert result["conversion_efficiency_percent"] == pytest.approx(90.0)
 
-    assert result["absolute_error_biogas_Nm3"] == pytest.approx(-20.0)
-    assert result["relative_error_biogas_percent"] == pytest.approx(-10.0)
+    assert result["absolute_error_biogas_Nm3"] == pytest.approx(20.0)
+    assert result["signed_error_biogas_Nm3"] == pytest.approx(-20.0)
+    assert result["relative_error_biogas_percent"] == pytest.approx(10.0)
+    assert result["signed_relative_error_biogas_percent"] == pytest.approx(-10.0)
 
     assert result["validation_status"] == "Conversão elevada"
 
@@ -61,6 +65,10 @@ def test_compare_experimental_to_theoretical_handles_missing_experimental_data()
     assert result["absolute_error_biogas_Nm3"] is None
     assert result["relative_error_biogas_percent"] is None
     assert result["CH4_percent_deviation"] is None
+    assert result["signed_error_CH4_Nm3"] is None
+    assert result["signed_relative_error_CH4_percent"] is None
+    assert result["signed_error_biogas_Nm3"] is None
+    assert result["signed_relative_error_biogas_percent"] is None
     assert result["validation_status"] == "Não calculado"
 
 
