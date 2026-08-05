@@ -38,7 +38,17 @@ def read_components_csv(path: str | Path) -> List[ComponentFlow]:
 
         for row in reader:
             name = row["name"].strip()
-            molar_flow = float(row["molar_flow"])
+            molar_flow_text = (row.get("molar_flow") or "").strip()
+
+            if molar_flow_text == "":
+                raise ValueError(f"Missing molar_flow for component {name!r}.")
+
+            try:
+                molar_flow = float(molar_flow_text)
+            except ValueError as exc:
+                raise ValueError(
+                    f"Invalid molar_flow for component {name!r}: {molar_flow_text!r}"
+                ) from exc
 
             formula = (row.get("formula") or "").strip()
             if formula:
