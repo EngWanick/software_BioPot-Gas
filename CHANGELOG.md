@@ -8,6 +8,7 @@
 - Added molar-basis metadata to calculation results.
 - Added carbon-conversion model assumption metadata to calculation results.
 - Added validation-basis metadata to experimental validation results.
+- Added warnings for invalid experimental validation values.
 - Added documentation for current model assumptions, operational scope, and known limitations.
 
 ### Changed
@@ -16,6 +17,7 @@
 - Excel writer default output now uses a calculated workbook path instead of overwriting the input workbook.
 - Removed water from the auxiliary organic component database.
 - Experimental validation output cleanup now uses the existing worksheet extent instead of a fixed 100-row range.
+- Documented `print_result()` as a manual reporting utility outside the Excel pipeline.
 
 ### Fixed
 - Active Excel rows with empty `molar_flow` are now rejected.
