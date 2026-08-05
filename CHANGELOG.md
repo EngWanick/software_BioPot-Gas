@@ -9,6 +9,9 @@
 - Added carbon-conversion model assumption metadata to calculation results.
 - Added validation-basis metadata documenting that current validation error fields are signed deviations.
 - Added warnings for invalid experimental validation values.
+- Added run metadata to the Excel runner JSON output, including input path, input SHA-256 hash, output path, UTC timestamp, and package version.
+- Added warnings for Excel output key mismatches between calculated results and the `02_OUTPUTS` template.
+- Documented validation classification thresholds as internal BioPot-Gas criteria.
 - Added documentation for current model assumptions, operational scope, and known limitations.
 
 ### Changed
