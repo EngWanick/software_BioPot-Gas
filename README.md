@@ -50,16 +50,6 @@ Limitações conhecidas:
 - A conversão automática de unidades declaradas na planilha ainda não está implementada.
 - A separação entre `excel_reader.py` e `excel_writer.py` ainda contém sobreposição legada e será consolidada em refatoração futura.
 
-## Benchmarks incluídos
-
-- Controle estequiométrico e volumétrico com celulose, comparado ao valor teórico de 415 mL CH4/g VS.
-- Biodegradabilidade experimental de FW, DIW, BW e CBW com dados de Llanos-Lizcano et al. 2024.
-- Notas metodológicas baseadas em Nielfa et al. 2015, Angelidaki et al. 2009 e Zhang et al. 2021.
-- Fórmulas genéricas como `PROTEIN_GENERIC`, `LIGNIN_GENERIC`,
-  `BIOMASS_GENERIC` e `ENZYME_GENERIC` tratadas como composições
-  representativas para estimativas preliminares, não como análises elementares
-  específicas de uma amostra. Referência: Wooley and Putsche (1996), NREL.
-
 ## API CSV para uso sem o template Excel
 
 Além do template Excel, o BioPot-Gas pode ser usado por uma API CSV simples.
@@ -70,3 +60,23 @@ Arquivos de exemplo:
 
 - `examples/example_components.csv`
 - `examples/example_csv.py`
+
+## Aba `06_VALIDATION_BENCHMARKS`
+
+A aba `06_VALIDATION_BENCHMARKS` é mantida no template Excel como camada de
+documentação técnico-científica e comparação com benchmarks. No pipeline Python
+atual, essa aba não é recalculada nem reescrita diretamente; seu conteúdo é
+preservado ao gerar o arquivo `_calculated.xlsx`.
+
+Os valores nela registrados devem ser interpretados como benchmarks documentais
+do modelo.
+
+## Benchmarks incluídos
+
+- Controle estequiométrico e volumétrico com celulose, comparado ao valor teórico de 415 mL CH4/g VS.
+- Biodegradabilidade experimental de FW, DIW, BW e CBW com dados de Llanos-Lizcano et al. 2024.
+- Notas metodológicas baseadas em Nielfa et al. 2015, Angelidaki et al. 2009 e Zhang et al. 2021.
+- Fórmulas genéricas como `PROTEIN_GENERIC`, `LIGNIN_GENERIC`,
+  `BIOMASS_GENERIC` e `ENZYME_GENERIC` tratadas como composições
+  representativas para estimativas preliminares, não como análises elementares
+  específicas de uma amostra. Referência: Wooley and Putsche (1996), NREL.
