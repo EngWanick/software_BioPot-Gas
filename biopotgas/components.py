@@ -6,6 +6,11 @@ from .core import ElementalComposition, parse_empirical_formula
 # Initial component database based on common components used in lignocellulosic
 # and anaerobic digestion models. This file can be expanded with the exact
 # component set adopted in each project.
+#
+# Generic empirical formulas for approximate BioPot-Gas component modeling are based on:
+# Wooley, R. J. and Putsche, V. (1996).
+# These formulas are representative compositions and should not be interpreted
+# as sample-specific elemental analyses.
 COMPONENT_FORMULAS = {
     "GLUCOSE": "C6H12O6",
     "SUCROSE": "C12H22O11",

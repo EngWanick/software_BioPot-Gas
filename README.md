@@ -55,3 +55,7 @@ Limitações conhecidas:
 - Controle estequiométrico e volumétrico com celulose, comparado ao valor teórico de 415 mL CH4/g VS.
 - Biodegradabilidade experimental de FW, DIW, BW e CBW com dados de Llanos-Lizcano et al. 2024.
 - Notas metodológicas baseadas em Nielfa et al. 2015, Angelidaki et al. 2009 e Zhang et al. 2021.
+- Fórmulas genéricas como `PROTEIN_GENERIC`, `LIGNIN_GENERIC`,
+  `BIOMASS_GENERIC` e `ENZYME_GENERIC` tratadas como composições
+  representativas para estimativas preliminares, não como análises elementares
+  específicas de uma amostra. Referência: Wooley and Putsche (1996), NREL.
