@@ -6,7 +6,7 @@ from .excel_reader import read_biopotgas_excel
 from .excel_utils import to_bool
 from .report import result_to_dict
 from .core import calculate_biogas_from_components
-from .constants import MOLECULAR_WEIGHTS_KG_PER_KMOL
+from .constants import MOLECULAR_WEIGHTS_KG_PER_KMOL, CH4_LHV_MJ_PER_NM3, KWH_PER_MJ
 
 
 def calculate_from_excel(path: str | Path, sheet_name: str = "01_INPUTS") -> dict:
@@ -29,8 +29,8 @@ def calculate_from_excel(path: str | Path, sheet_name: str = "01_INPUTS") -> dic
     )
     normal_temperature_C = float(get_global_parameter("normal_temperature_C", 0.0))
     normal_pressure_kPa = float(get_global_parameter("normal_pressure_kPa", 101.325))
-    ch4_lhv_mj_per_Nm3 = float(get_global_parameter("CH4_LHV_MJ_per_Nm3", 35.8))
-    kwh_per_mj = float(get_global_parameter("kWh_per_MJ", 0.277778))
+    ch4_lhv_mj_per_Nm3 = CH4_LHV_MJ_PER_NM3
+    kwh_per_mj = KWH_PER_MJ
 
     result = calculate_biogas_from_components(
         data.components,
