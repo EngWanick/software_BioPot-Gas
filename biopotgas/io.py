@@ -10,7 +10,10 @@ from .components import get_component_composition
 
 def read_components_csv(path: str | Path) -> List[ComponentFlow]:
     """
-    Read a CSV file with component data.
+    Read component flows from a CSV file for programmatic use without Excel.
+
+    This function is an alternative input adapter for users who want to call
+    the BioPot-Gas computational core directly, without the XLSX template.
 
     Required columns
     ----------------
@@ -18,11 +21,19 @@ def read_components_csv(path: str | Path) -> List[ComponentFlow]:
         Component name.
     molar_flow:
         Component molar flow in any consistent molar unit.
+
+    Optional columns
+    ----------------
     formula:
         Empirical formula. If empty, the component name is searched in the
-        internal database.
+        internal component database.
     degradable:
         true/false. If absent or empty, true is assumed.
+
+    Returns
+    -------
+    list[ComponentFlow]
+        Component records suitable for calculate_biogas_from_components().
     """
 
     records: List[ComponentFlow] = []

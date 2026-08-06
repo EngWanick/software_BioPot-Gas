@@ -18,5 +18,7 @@ from .excel_reader import (
 )
 from .excel_writer import write_outputs_to_excel
 from .pipeline import calculate_from_excel
+from .io import read_components_csv
+from .report import result_to_dict
 
 __version__ = "0.6.1"

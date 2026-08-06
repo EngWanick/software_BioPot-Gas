@@ -59,3 +59,14 @@ Limitações conhecidas:
   `BIOMASS_GENERIC` e `ENZYME_GENERIC` tratadas como composições
   representativas para estimativas preliminares, não como análises elementares
   específicas de uma amostra. Referência: Wooley and Putsche (1996), NREL.
+
+## API CSV para uso sem o template Excel
+
+Além do template Excel, o BioPot-Gas pode ser usado por uma API CSV simples.
+Esse caminho é destinado a uso programático ou automação externa, mantendo o
+núcleo computacional independente do arquivo `.xlsx`.
+
+Arquivos de exemplo:
+
+- `examples/example_components.csv`
+- `examples/example_csv.py`
