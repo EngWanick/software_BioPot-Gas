@@ -144,7 +144,15 @@ def test_excel_reader_requires_element_columns_for_elements_mode(tmp_path):
 
     assert header_row is not None
 
-    target_row = header_row + 1
+    target_row = None
+    for row in range(header_row + 1, worksheet.max_row + 1):
+        component_name = worksheet.cell(row=row, column=headers["component_name"]).value
+        if str(component_name).strip() == "CUSTOM_ELEMENTS":
+            target_row = row
+            break
+
+    assert target_row is not None
+
     worksheet.cell(row=target_row, column=headers["active_row"]).value = True
     worksheet.cell(row=target_row, column=headers["input_mode"]).value = "ELEMENTS"
 
@@ -183,7 +191,15 @@ def test_excel_reader_suggests_similar_database_component_for_typo(tmp_path):
 
     assert header_row is not None
 
-    target_row = header_row + 1
+    target_row = None
+    for row in range(header_row + 1, worksheet.max_row + 1):
+        component_name = worksheet.cell(row=row, column=headers["component_name"]).value
+        if str(component_name).strip() == "GLUCOSE":
+            target_row = row
+            break
+
+    assert target_row is not None
+
     worksheet.cell(row=target_row, column=headers["active_row"]).value = True
     worksheet.cell(row=target_row, column=headers["component_name"]).value = "GLUCOS"
     worksheet.cell(row=target_row, column=headers["input_mode"]).value = "DATABASE"
