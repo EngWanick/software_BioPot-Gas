@@ -15,7 +15,7 @@ from .core import (
 from .excel_reader import (
     read_biopotgas_excel,
     calculate_from_excel,
-    write_outputs_to_excel,
 )
+from .excel_writer import write_outputs_to_excel
 
 __version__ = "0.6.1"

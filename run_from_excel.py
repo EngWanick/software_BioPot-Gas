@@ -3,7 +3,8 @@ from pathlib import Path
 import hashlib
 import json
 
-from biopotgas.excel_reader import calculate_from_excel, write_outputs_to_excel
+from biopotgas.excel_reader import calculate_from_excel
+from biopotgas.excel_writer import write_outputs_to_excel
 
 
 INPUT_FILE = Path("BioPot-Gas_Input_Template_v6_validation_benchmarks.xlsx")
