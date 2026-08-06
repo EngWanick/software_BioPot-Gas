@@ -6,7 +6,7 @@ from typing import Any
 
 from openpyxl import load_workbook
 
-from .excel_reader import calculate_from_excel
+from .pipeline import calculate_from_excel
 from .excel_utils import get_header_map, to_bool
 from .validation import compare_experimental_to_theoretical
 

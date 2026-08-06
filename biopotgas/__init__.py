@@ -13,9 +13,10 @@ from .core import (
     calculate_biogas_from_components,
 )
 from .excel_reader import (
+    ExcelInputData,
     read_biopotgas_excel,
-    calculate_from_excel,
 )
 from .excel_writer import write_outputs_to_excel
+from .pipeline import calculate_from_excel
 
 __version__ = "0.6.1"

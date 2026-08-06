@@ -1,7 +1,8 @@
 import pytest
 from openpyxl import Workbook
 
-from biopotgas.excel_reader import read_biopotgas_excel, calculate_from_excel
+from biopotgas.excel_reader import read_biopotgas_excel
+from biopotgas.pipeline import calculate_from_excel
 
 def make_input_workbook(path):
     wb = Workbook()

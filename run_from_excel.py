@@ -3,7 +3,7 @@ from pathlib import Path
 import hashlib
 import json
 
-from biopotgas.excel_reader import calculate_from_excel
+from biopotgas.pipeline import calculate_from_excel
 from biopotgas.excel_writer import write_outputs_to_excel
 
 
