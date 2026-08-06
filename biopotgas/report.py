@@ -1,42 +1,40 @@
 from __future__ import annotations
 
 from .core import BiogasResult
-
-
-MOLECULAR_WEIGHTS_KG_PER_KMOL = {
-    "CH4": 16.043,
-    "CO2": 44.010,
-    "NH3": 17.031,
-    "H2S": 34.081,
-    "C": 12.011,
-    "H2O": 18.015,
-}
+from .constants import (
+    CH4_LHV_MJ_PER_NM3,
+    IDEAL_GAS_CONSTANT_KPA_M3_PER_KMOL_K,
+    KWH_PER_MJ,
+    MOLECULAR_WEIGHTS_KG_PER_KMOL,
+    MOLECULAR_WEIGHTS_KG_PER_KMOL,
+    STANDARD_PRESSURE_KPA,
+    STANDARD_TEMPERATURE_C,
+)
 
 
 def molar_volume_m3_per_kmol(
-    temperature_C: float = 0.0,
-    pressure_kPa: float = 101.325,
+    temperature_C: float = STANDARD_TEMPERATURE_C,
+    pressure_kPa: float = STANDARD_PRESSURE_KPA,
 ) -> float:
     """Calculate molar volume in m3 per kmol using the ideal gas equation."""
 
     if pressure_kPa <= 0:
         raise ValueError("pressure_kPa must be positive.")
 
-    R_kPa_m3_per_kmol_K = 8.314462618
     temperature_K = temperature_C + 273.15
 
     if temperature_K <= 0:
         raise ValueError("temperature_C must be above absolute zero.")
 
-    return R_kPa_m3_per_kmol_K * temperature_K / pressure_kPa
+    return IDEAL_GAS_CONSTANT_KPA_M3_PER_KMOL_K * temperature_K / pressure_kPa
 
 
 def result_to_dict(
     result: BiogasResult,
-    normal_temperature_C: float = 0.0,
-    normal_pressure_kPa: float = 101.325,
-    ch4_lhv_mj_per_Nm3: float = 35.8,
-    kwh_per_mj: float = 0.277778,
+    normal_temperature_C: float = STANDARD_TEMPERATURE_C,
+    normal_pressure_kPa: float = STANDARD_PRESSURE_KPA,
+    ch4_lhv_mj_per_Nm3: float = CH4_LHV_MJ_PER_NM3,
+    kwh_per_mj: float = KWH_PER_MJ,
 ) -> dict:
     """Convert result to molar, mass, volumetric and energy outputs."""
 

@@ -6,6 +6,7 @@ from .excel_reader import read_biopotgas_excel
 from .excel_utils import to_bool
 from .report import result_to_dict
 from .core import calculate_biogas_from_components
+from .constants import MOLECULAR_WEIGHTS_KG_PER_KMOL
 
 
 def calculate_from_excel(path: str | Path, sheet_name: str = "01_INPUTS") -> dict:
@@ -49,7 +50,9 @@ def calculate_from_excel(path: str | Path, sheet_name: str = "01_INPUTS") -> dic
 
     output["water_available_mol"] = data.water_available_mol
     output["net_water_balance_mol"] = net_water_balance_mol
-    output["net_water_balance_mass"] = net_water_balance_mol * 18.015
+    output["net_water_balance_mass"] = (
+        net_water_balance_mol * MOLECULAR_WEIGHTS_KG_PER_KMOL["H2O"]
+    )
     output["net_water_balance_note"] = (
         "net_water_balance_mol is calculated as water_available_mol minus H2O_mol. "
         "Positive values indicate water surplus. Negative values indicate water deficit."
