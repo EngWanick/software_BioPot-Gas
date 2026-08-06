@@ -11,6 +11,25 @@ from .excel_utils import get_header_map, to_bool
 from .validation import compare_experimental_to_theoretical
 
 
+OUTPUT_TEMPLATE_NON_RESULT_KEYS = {
+    "BioPot-Gas v0.5 | Relatório Automático de Resultados",
+    "BioPot-Gas v0.6 | Relatório Automático de Resultados",
+    "Identificação",
+    "Parâmetros usados",
+    "Resultados molares",
+    "Resultados mássicos",
+    "Resultados volumétricos normalizados",
+    "Resultados energéticos",
+    "Balanço de água",
+    "Mensagens e alertas",
+    "Mensagens, notas e alertas",
+    "Campo",
+    "Project_name",
+    "Analyst",
+    "Date",
+    "Basis_molar_unit",
+}
+
 def write_outputs_to_excel(
         input_path: str | Path,
         output_path: str | Path | None = None,
@@ -42,8 +61,18 @@ def write_outputs_to_excel(
 
         output_rows[key] = row
 
-    unknown_output_keys = sorted(set(output_rows).difference(results))
-    unwritten_result_keys = sorted(set(results).difference(output_rows))
+    output_template_keys = set(output_rows)
+
+    unknown_output_keys = sorted(
+        key
+        for key in output_template_keys - set(results)
+        if key not in OUTPUT_TEMPLATE_NON_RESULT_KEYS
+    )
+    unwritten_result_keys = sorted(
+        key
+        for key in set(results) - output_template_keys
+        if key != "warnings"
+    )
 
     output_warnings: list[str] = []
     if results.get("warnings"):

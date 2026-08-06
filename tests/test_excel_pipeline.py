@@ -253,6 +253,10 @@ def test_excel_writer_warns_about_output_template_key_mismatches(tmp_path):
             break
 
     assert warnings_value is not None
-    assert "Calculated result keys not written to 02_OUTPUTS" in warnings_value
+    assert "02_OUTPUTS keys not found in calculated results" in warnings_value
+    assert "unknown_output_key" in warnings_value
+    assert "Balanço de água" not in warnings_value
+    assert "Resultados mássicos" not in warnings_value
+    assert "Identificação" not in warnings_value
     assert "02_OUTPUTS keys not found in calculated results" in warnings_value
     assert "unknown_output_key" in warnings_value
