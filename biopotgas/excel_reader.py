@@ -9,6 +9,7 @@ from openpyxl import load_workbook
 
 from .core import ComponentFlow, ElementalComposition, calculate_biogas_from_components, parse_empirical_formula
 from .report import result_to_dict
+from .excel_utils import to_bool, to_float, get_header_map
 
 
 @dataclass(frozen=True)
@@ -17,32 +18,6 @@ class ExcelInputData:
     components: List[ComponentFlow]
     database: Dict[str, ElementalComposition]
     water_available_mol: float = 0.0
-
-def _to_bool(value: Any, default: bool = True) -> bool:
-    if value is None or value == "":
-        return default
-    if isinstance(value, bool):
-        return value
-    text = str(value).strip().lower()
-    if text in {"true", "1", "yes", "sim", "s"}:
-        return True
-    if text in {"false", "0", "no", "não", "nao", "n"}:
-        return False
-    return default
-
-def _to_float(value: Any, field_name: str, row_number: int | None = None) -> float:
-    if value is None or value == "":
-        return 0.0
-    try:
-        return float(value)
-    except Exception as exc:
-        location = f" at row {row_number}" if row_number else ""
-        raise ValueError(f"Invalid numeric value for {field_name}{location}: {value!r}") from exc
-
-
-def _get_header_map(ws, header_row: int) -> Dict[str, int]:
-    values = [ws.cell(row=header_row, column=col).value for col in range(1, ws.max_column + 1)]
-    return {str(v).strip(): idx + 1 for idx, v in enumerate(values) if v is not None and str(v).strip()}
 
 def _is_free_water_entry(name: str, formula: Any, input_mode: str) -> bool:
     name_key = name.strip().upper()
@@ -70,7 +45,7 @@ def read_component_database(wb) -> Dict[str, ElementalComposition]:
     if header_row is None:
         return {}
 
-    headers = _get_header_map(ws, header_row)
+    headers = get_header_map(ws, header_row)
     database: Dict[str, ElementalComposition] = {}
 
     for row in range(header_row + 1, ws.max_row + 1):
@@ -79,7 +54,7 @@ def read_component_database(wb) -> Dict[str, ElementalComposition]:
             continue
 
         active_col = headers.get("active")
-        active = _to_bool(ws.cell(row=row, column=active_col).value, default=True) if active_col else True
+        active = to_bool(ws.cell(row=row, column=active_col).value, default=True) if active_col else True
         if not active:
             continue
 
@@ -150,7 +125,7 @@ def read_biopotgas_excel(path: str | Path, sheet_name: str = "01_INPUTS") -> Exc
         if name_text == "":
             continue
 
-        active = _to_bool(ws.cell(row=row, column=headers["active_row"]).value, default=True)
+        active = to_bool(ws.cell(row=row, column=headers["active_row"]).value, default=True)
         if not active:
             continue
 
@@ -160,9 +135,9 @@ def read_biopotgas_excel(path: str | Path, sheet_name: str = "01_INPUTS") -> Exc
         if molar_flow_value is None or str(molar_flow_value).strip() == "":
             raise ValueError(f"Molar flow is required for component {name!r} at row {row}.")
         
-        molar_flow = _to_float(molar_flow_value, "molar_flow", row)
+        molar_flow = to_float(molar_flow_value, "molar_flow", row)
         
-        degradable = _to_bool(ws.cell(row=row, column=headers["degradable"]).value, default=True)
+        degradable = to_bool(ws.cell(row=row, column=headers["degradable"]).value, default=True)
         input_mode = str(ws.cell(row=row, column=headers["input_mode"]).value or "DATABASE").strip().upper()
 
         formula = ws.cell(row=row, column=headers["formula"]).value if "formula" in headers else None
@@ -203,11 +178,11 @@ def read_biopotgas_excel(path: str | Path, sheet_name: str = "01_INPUTS") -> Exc
                 )
             
             composition = ElementalComposition(
-                C=_to_float(ws.cell(row=row, column=headers["C_atoms"]).value, "C_atoms", row),
-                H=_to_float(ws.cell(row=row, column=headers["H_atoms"]).value, "H_atoms", row),
-                O=_to_float(ws.cell(row=row, column=headers["O_atoms"]).value, "O_atoms", row),
-                N=_to_float(ws.cell(row=row, column=headers["N_atoms"]).value, "N_atoms", row),
-                S=_to_float(ws.cell(row=row, column=headers["S_atoms"]).value, "S_atoms", row),
+                C=to_float(ws.cell(row=row, column=headers["C_atoms"]).value, "C_atoms", row),
+                H=to_float(ws.cell(row=row, column=headers["H_atoms"]).value, "H_atoms", row),
+                O=to_float(ws.cell(row=row, column=headers["O_atoms"]).value, "O_atoms", row),
+                N=to_float(ws.cell(row=row, column=headers["N_atoms"]).value, "N_atoms", row),
+                S=to_float(ws.cell(row=row, column=headers["S_atoms"]).value, "S_atoms", row),
             )
         else:
             raise ValueError(f"Invalid input_mode for component {name!r} at row {row}: {input_mode!r}.")
@@ -236,7 +211,7 @@ def calculate_from_excel(path: str | Path, sheet_name: str = "01_INPUTS") -> dic
         return data.global_parameters[name]
 
     carbon_conversion = float(get_global_parameter("carbon_conversion", 0.95))
-    include_non_degradable = _to_bool(
+    include_non_degradable = to_bool(
         get_global_parameter("include_non_degradable", False),
         default=False,
     )

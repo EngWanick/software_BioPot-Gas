@@ -7,8 +7,9 @@ from typing import Any
 from openpyxl import load_workbook
 from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
 
-from .excel_reader import _get_header_map, _to_bool, calculate_from_excel
+from .excel_reader import calculate_from_excel
 from .validation import compare_experimental_to_theoretical
+from .excel_utils import get_header_map, to_bool
 
 OUTPUT_SHEET = "02_OUTPUTS"
 
@@ -195,8 +196,8 @@ def write_outputs_to_excel(
                 break
 
         if header_row and calc_header_row:
-            h = _get_header_map(val, header_row)
-            ch = _get_header_map(val, calc_header_row)
+            h = get_header_map(val, header_row)
+            ch = get_header_map(val, calc_header_row)
             output_row = calc_header_row + 1
 
             last_row = max(val.max_row, output_row)
@@ -212,7 +213,7 @@ def write_outputs_to_excel(
                     continue
 
                 active_col = h.get("active_row")
-                active = _to_bool(val.cell(row=r, column=active_col).value, default=True) if active_col else True
+                active = to_bool(val.cell(row=r, column=active_col).value, default=True) if active_col else True
                 if not active:
                     continue
 
