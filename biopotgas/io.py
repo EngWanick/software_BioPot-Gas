@@ -47,26 +47,41 @@ def read_components_csv(path: str | Path) -> List[ComponentFlow]:
         if missing:
             raise ValueError(f"Missing required CSV columns: {sorted(missing)}")
 
-        for row in reader:
+        for row_number, row in enumerate(reader, start=2):
             name = row["name"].strip()
             molar_flow_text = (row.get("molar_flow") or "").strip()
 
             if molar_flow_text == "":
-                raise ValueError(f"Missing molar_flow for component {name!r}.")
+                raise ValueError(
+                    f"Missing molar_flow for component {name!r} at CSV row {row_number}."
+                )
 
             try:
                 molar_flow = float(molar_flow_text)
             except ValueError as exc:
                 raise ValueError(
-                    f"Invalid molar_flow for component {name!r}: {molar_flow_text!r}"
+                    f"Invalid molar_flow for component {name!r} at CSV row {row_number}: "
+                    f"{molar_flow_text!r}"
                 ) from exc
 
             formula = (row.get("formula") or "").strip()
             if formula:
-                composition = parse_empirical_formula(formula)
+                try:
+                    composition = parse_empirical_formula(formula)
+                except ValueError as exc:
+                    raise ValueError(
+                        f"Invalid formula for component {name!r} at CSV row {row_number}: "
+                        f"{formula!r}"
+                    ) from exc
             else:
-                composition = get_component_composition(name)
-
+                try:
+                    composition = get_component_composition(name)
+                except ValueError as exc:
+                    raise ValueError(
+                        f"Unknown component {name!r} at CSV row {row_number}. "
+                        f"Provide a formula or use a component name from the internal database."
+                    ) from exc
+                
             degradable_text = (row.get("degradable") or "true").strip().lower()
             degradable = degradable_text not in {"false", "0", "no", "não", "nao"}
 
