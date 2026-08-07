@@ -88,7 +88,9 @@ def read_biopotgas_excel(path: str | Path, sheet_name: str = "01_INPUTS") -> Exc
     for row in range(1, ws.max_row + 1):
         row_values = [ws.cell(row=row, column=col).value for col in range(1, ws.max_column + 1)]
         normalized = [str(v).strip() if v is not None else "" for v in row_values]
-        if "component_name" in normalized and "molar_flow" in normalized:
+        if "component_name" in normalized and (
+            "input_quantity" in normalized or "molar_flow" in normalized
+        ):
             header_row = row
             headers = {name: idx + 1 for idx, name in enumerate(normalized) if name}
             break
@@ -96,10 +98,16 @@ def read_biopotgas_excel(path: str | Path, sheet_name: str = "01_INPUTS") -> Exc
     if header_row is None:
         raise ValueError("The component input table header was not found.")
 
-    required_columns = {"component_name", "molar_flow", "degradable", "input_mode", "active_row"}
+    required_columns = {"component_name", "degradable", "input_mode", "active_row"}
     missing = required_columns.difference(headers)
     if missing:
         raise ValueError(f"Missing required columns in input table: {sorted(missing)}")
+
+    quantity_column = headers.get("input_quantity", headers.get("molar_flow"))
+    if quantity_column is None:
+        raise ValueError(
+            "Missing required quantity column in input table: use 'input_quantity'."
+        )
 
     components: List[ComponentFlow] = []
     empty_rows = 0
@@ -130,11 +138,11 @@ def read_biopotgas_excel(path: str | Path, sheet_name: str = "01_INPUTS") -> Exc
 
         name = name_text
 
-        molar_flow_value = ws.cell(row=row, column=headers["molar_flow"]).value
-        if molar_flow_value is None or str(molar_flow_value).strip() == "":
-            raise ValueError(f"Molar flow is required for component {name!r} at row {row}.")
+        quantity_value = ws.cell(row=row, column=quantity_column).value
+        if quantity_value is None or str(quantity_value).strip() == "":
+            raise ValueError(f"Input quantity is required for component {name!r} at row {row}.")
         
-        molar_flow = to_float(molar_flow_value, "molar_flow", row)
+        molar_flow = to_float(quantity_value, "input_quantity", row)
         
         degradable = to_bool(ws.cell(row=row, column=headers["degradable"]).value, default=True)
         input_mode = str(ws.cell(row=row, column=headers["input_mode"]).value or "DATABASE").strip().upper()

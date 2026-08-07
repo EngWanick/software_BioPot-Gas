@@ -117,11 +117,6 @@ def test_non_degradable_components_are_excluded_from_buswell_calculation():
     assert result.co2_mol == reference.co2_mol
     assert result.inert_carbon_mol == reference.inert_carbon_mol
 
-import pytest
-
-from biopotgas.core import ElementalComposition, ComponentFlow, calculate_biogas_from_components
-
-
 def test_negative_elemental_composition_is_rejected():
     component = ComponentFlow(
         name="INVALID",

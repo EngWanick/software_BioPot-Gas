@@ -49,7 +49,7 @@ def test_excel_pipeline_generates_calculated_workbook_without_overwriting_input(
     assert "04_EXPERIMENTAL_VALIDATION" in workbook.sheetnames
     assert "06_VALIDATION_BENCHMARKS" in workbook.sheetnames
 
-def test_excel_reader_rejects_empty_molar_flow_in_active_row(tmp_path):
+def test_excel_reader_rejects_empty_input_quantity_in_active_row(tmp_path):
     input_copy = tmp_path / TEMPLATE_FILE.name
     shutil.copy2(TEMPLATE_FILE, input_copy)
 
@@ -66,7 +66,7 @@ def test_excel_reader_rejects_empty_molar_flow_in_active_row(tmp_path):
         ]
         normalized = [str(value).strip() if value is not None else "" for value in values]
 
-        if "component_name" in normalized and "molar_flow" in normalized:
+        if "component_name" in normalized and "input_quantity" in normalized:
             header_row = row
             headers = {
                 name: index + 1
@@ -77,13 +77,26 @@ def test_excel_reader_rejects_empty_molar_flow_in_active_row(tmp_path):
 
     assert header_row is not None
 
-    target_row = header_row + 1
+    target_row = None
+    for row in range(header_row + 1, worksheet.max_row + 1):
+        component_name = worksheet.cell(row=row, column=headers["component_name"]).value
+        if component_name is None or str(component_name).strip() == "":
+            continue
+        component_name_text = str(component_name).strip().upper()
+        if component_name_text in {"WATER", "H2O", "ÁGUA", "AGUA"}:
+            continue
+
+        target_row = row
+        break
+
+    assert target_row is not None
+
     worksheet.cell(row=target_row, column=headers["active_row"]).value = True
-    worksheet.cell(row=target_row, column=headers["molar_flow"]).value = None
+    worksheet.cell(row=target_row, column=headers["input_quantity"]).value = None
 
     workbook.save(input_copy)
 
-    with pytest.raises(ValueError, match="Molar flow is required"):
+    with pytest.raises(ValueError, match="Input quantity is required"):
         read_biopotgas_excel(input_copy)
 
 def test_calculate_from_excel_warns_when_global_parameter_uses_default(tmp_path):
@@ -133,7 +146,9 @@ def test_excel_reader_requires_element_columns_for_elements_mode(tmp_path):
         ]
         normalized = [str(value).strip() if value is not None else "" for value in values]
 
-        if "component_name" in normalized and "molar_flow" in normalized:
+        if "component_name" in normalized and (
+            "input_quantity" in normalized or "molar_flow" in normalized
+        ):
             header_row = row
             headers = {
                 name: index + 1
@@ -180,7 +195,9 @@ def test_excel_reader_suggests_similar_database_component_for_typo(tmp_path):
         ]
         normalized = [str(value).strip() if value is not None else "" for value in values]
 
-        if "component_name" in normalized and "molar_flow" in normalized:
+        if "component_name" in normalized and (
+            "input_quantity" in normalized or "molar_flow" in normalized
+        ):
             header_row = row
             headers = {
                 name: index + 1

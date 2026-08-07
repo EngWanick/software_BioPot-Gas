@@ -30,6 +30,79 @@ OUTPUT_TEMPLATE_NON_RESULT_KEYS = {
     "Basis_molar_unit",
 }
 
+def output_unit_for_key(key: str, results: Mapping[str, Any]) -> str | None:
+    molar_keys = {
+        "CH4_mol",
+        "CO2_mol",
+        "NH3_mol",
+        "H2S_mol",
+        "H2O_mol",
+        "total_gas_mol",
+        "inert_carbon_mol",
+        "water_available_mol",
+        "net_water_balance_mol",
+    }
+
+    mass_keys = {
+        "CH4_mass",
+        "CO2_mass",
+        "NH3_mass",
+        "H2S_mass",
+        "H2O_mass",
+        "inert_carbon_mass",
+        "net_water_balance_mass",
+    }
+
+    volume_keys = {
+        "CH4_Nm3",
+        "CO2_Nm3",
+        "NH3_Nm3",
+        "H2S_Nm3",
+        "total_biogas_Nm3",
+        "biogas_Nm3",
+    }
+
+    energy_mj_keys = {
+        "energy_MJ",
+        "CH4_energy_LHV_MJ",
+    }
+
+    energy_kwh_keys = {
+        "energy_kWh",
+        "CH4_energy_LHV_kWh",        
+    }
+
+    percentage_keys = {
+        "CH4_percent",
+        "CO2_percent",
+        "NH3_percent",
+        "H2S_percent",
+    }
+
+    fraction_keys = {
+        "CH4_fraction",
+        "CO2_fraction",
+        "NH3_fraction",
+        "H2S_fraction",
+    }
+
+    if key in molar_keys:
+        return results.get("output_molar_unit")
+    if key in mass_keys:
+        return results.get("output_mass_unit")
+    if key in volume_keys:
+        return results.get("output_volume_unit")
+    if key in energy_mj_keys:
+        return results.get("output_energy_MJ_unit")
+    if key in energy_kwh_keys:
+        return results.get("output_energy_kWh_unit")
+    if key in percentage_keys:
+        return "%"
+    if key in fraction_keys:
+        return "fraction"
+
+    return None
+
 def write_outputs_to_excel(
         input_path: str | Path,
         output_path: str | Path | None = None,
@@ -99,6 +172,10 @@ def write_outputs_to_excel(
     for key, row in output_rows.items():
         if key in results:
             ws.cell(row=row, column=2).value = results[key]
+
+            unit = output_unit_for_key(key, results)
+            if unit is not None:
+                ws.cell(row=row, column=3).value = unit
 
     if "04_EXPERIMENTAL_VALIDATION" in wb.sheetnames:
         val = wb["04_EXPERIMENTAL_VALIDATION"]
