@@ -9,6 +9,7 @@ from openpyxl import load_workbook
 
 from .core import ComponentFlow, ElementalComposition, parse_empirical_formula
 from .excel_utils import to_bool, to_float, get_header_map
+from .input_utils import is_free_water_entry
 
 
 @dataclass(frozen=True)
@@ -17,16 +18,6 @@ class ExcelInputData:
     components: List[ComponentFlow]
     database: Dict[str, ElementalComposition]
     water_available_mol: float = 0.0
-
-def _is_free_water_entry(name: str, formula: Any, input_mode: str) -> bool:
-    name_key = name.strip().upper()
-    formula_key = "" if formula is None else str(formula).strip().upper()
-
-    return (
-        name_key in {"WATER", "H2O", "ÁGUA", "AGUA"}
-        or formula_key == "H2O"
-        or input_mode == "WATER"
-    )
 
 def read_component_database(wb) -> Dict[str, ElementalComposition]:
     if "03_COMPONENT_DATABASE" not in wb.sheetnames:
@@ -149,7 +140,7 @@ def read_biopotgas_excel(path: str | Path, sheet_name: str = "01_INPUTS") -> Exc
 
         formula = ws.cell(row=row, column=headers["formula"]).value if "formula" in headers else None
 
-        if _is_free_water_entry(name, formula, input_mode):
+        if is_free_water_entry(name, formula, input_mode):
             water_available_mol += molar_flow
             continue
 

@@ -2,13 +2,19 @@ from __future__ import annotations
 
 from pathlib import Path
 from typing import List
+from dataclasses import dataclass
 import csv
 
 from .core import ComponentFlow, parse_empirical_formula
 from .components import get_component_composition
+from .input_utils import is_free_water_entry
 
+@dataclass(frozen=True)
+class CSVInputData:
+    components: List[ComponentFlow]
+    water_available_mol: float = 0.0
 
-def read_components_csv(path: str | Path) -> List[ComponentFlow]:
+def read_components_csv(path: str | Path) -> CSVInputData:
     """
     Read component flows from a CSV file for programmatic use without Excel.
 
@@ -32,11 +38,13 @@ def read_components_csv(path: str | Path) -> List[ComponentFlow]:
 
     Returns
     -------
-    list[ComponentFlow]
-        Component records suitable for calculate_biogas_from_components().
+    CSVInputData
+        Component records and free-water quantity read from CSV. Component records
+        are suitable for calculate_biogas_from_components().
     """
 
     records: List[ComponentFlow] = []
+    water_available_mol = 0.0
     path = Path(path)
 
     with path.open("r", encoding="utf-8-sig", newline="") as f:
@@ -65,6 +73,12 @@ def read_components_csv(path: str | Path) -> List[ComponentFlow]:
                 ) from exc
 
             formula = (row.get("formula") or "").strip()
+            input_mode = (row.get("input_mode") or "").strip()
+
+            if is_free_water_entry(name, formula, input_mode):
+                water_available_mol += molar_flow
+                continue
+
             if formula:
                 try:
                     composition = parse_empirical_formula(formula)
@@ -81,7 +95,7 @@ def read_components_csv(path: str | Path) -> List[ComponentFlow]:
                         f"Unknown component {name!r} at CSV row {row_number}. "
                         f"Provide a formula or use a component name from the internal database."
                     ) from exc
-                
+
             degradable_text = (row.get("degradable") or "true").strip().lower()
             degradable = degradable_text not in {"false", "0", "no", "não", "nao"}
 
@@ -94,4 +108,7 @@ def read_components_csv(path: str | Path) -> List[ComponentFlow]:
                 )
             )
 
-    return records
+    return CSVInputData(
+        components=records,
+        water_available_mol=water_available_mol,
+    )
