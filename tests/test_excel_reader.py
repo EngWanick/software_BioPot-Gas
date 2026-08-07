@@ -12,7 +12,6 @@ def make_input_workbook(path):
 
     ws.append(["parameter", "value"])
     ws.append(["carbon_conversion", 1.0])
-    ws.append(["include_non_degradable", False])
     ws.append(["normal_temperature_C", 0.0])
     ws.append(["normal_pressure_kPa", 101.325])
     ws.append(["CH4_LHV_MJ_per_Nm3", 35.8])

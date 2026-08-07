@@ -23,10 +23,6 @@ def calculate_from_excel(path: str | Path, sheet_name: str = "01_INPUTS") -> dic
         return data.global_parameters[name]
 
     carbon_conversion = float(get_global_parameter("carbon_conversion", 0.95))
-    include_non_degradable = to_bool(
-        get_global_parameter("include_non_degradable", False),
-        default=False,
-    )
     normal_temperature_C = float(get_global_parameter("normal_temperature_C", 0.0))
     normal_pressure_kPa = float(get_global_parameter("normal_pressure_kPa", 101.325))
     ch4_lhv_mj_per_Nm3 = CH4_LHV_MJ_PER_NM3
@@ -35,7 +31,6 @@ def calculate_from_excel(path: str | Path, sheet_name: str = "01_INPUTS") -> dic
     result = calculate_biogas_from_components(
         data.components,
         carbon_conversion=carbon_conversion,
-        include_non_degradable=include_non_degradable,
     )
 
     output = result_to_dict(
@@ -60,7 +55,6 @@ def calculate_from_excel(path: str | Path, sheet_name: str = "01_INPUTS") -> dic
 
     output["number_of_components_read"] = len(data.components)
     output["carbon_conversion"] = carbon_conversion
-    output["include_non_degradable"] = include_non_degradable
     output["normal_temperature_C"] = normal_temperature_C
     output["normal_pressure_kPa"] = normal_pressure_kPa
     output["CH4_LHV_MJ_per_Nm3"] = ch4_lhv_mj_per_Nm3

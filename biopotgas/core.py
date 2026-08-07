@@ -229,7 +229,6 @@ def calculate_biogas_from_formula(
 def calculate_biogas_from_components(
     component_flows: Iterable[ComponentFlow],
     carbon_conversion: float = 0.95,
-    include_non_degradable: bool = False,
 ) -> BiogasResult:
     """
     Estimate biogas from a list of components with molar flows and formulas.
@@ -240,14 +239,16 @@ def calculate_biogas_from_components(
         Iterable of ComponentFlow records.
     carbon_conversion:
         Fraction of carbon available for biogas formation.
-    include_non_degradable:
-        If False, only degradable components enter the Buswell calculation.
+
+    Components marked as non-degradable do not enter the Buswell calculation.
+    Carbon reported as inert_carbon_mol refers only to the unconverted fraction
+    of degradable carbon controlled by carbon_conversion.
     """
 
     C = H = O = N = S = 0.0
 
     for item in component_flows:
-        if (not include_non_degradable) and (not item.degradable):
+        if not item.degradable:
             continue
 
         if item.molar_flow < 0:
