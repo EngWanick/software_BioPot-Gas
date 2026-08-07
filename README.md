@@ -2,9 +2,15 @@
 
 Software independente para estimativa, análise energética, validação experimental e validação técnico-científica do potencial teórico de biogás e biometano a partir de substratos orgânicos.
 
-## Novidade da versão v0.6
+## Novidade da versão v0.6.1
 
-A versão v0.6 preserva o núcleo computacional da v0.5 e adiciona a aba `06_VALIDATION_BENCHMARKS`, com evidências de validação matemática, volumétrica, experimental e metodológica.
+A versão v0.6.0 preserva o núcleo computacional da v0.5 e adiciona a aba `06_VALIDATION_BENCHMARKS`, com evidências de validação matemática, volumétrica, experimental e metodológica.
+
+A versão v0.6.1 consolida a estrutura de entrada e saída do BioPot-Gas dentro
+da série v0.6. Ela mantém a camada de validação técnico-científica introduzida
+na v0.6 e adiciona suporte ao balanço de água, bases globais de entrada no Excel,
+conversão de entradas mássicas, padronização de unidades de saída e suporte CSV
+para linhas de água livre.
 
 ## Arquivo principal
 
@@ -44,9 +50,12 @@ A planilha Excel é tratada como template controlado. A leitura atual espera que
 A aba `06_VALIDATION_BENCHMARKS` é preservada na geração da planilha calculada. Seu conteúdo de benchmark não é recalculado pelo pipeline Python nesta versão.
 
 Limitações conhecidas:
-- O consumo ou produção líquida de água no balanço de Buswell ainda não é calculado nem reportado explicitamente.
-- A conversão automática de unidades declaradas na planilha ainda não está implementada.
-- A separação entre `excel_reader.py` e `excel_writer.py` ainda contém sobreposição legada e será consolidada em refatoração futura.
+- A API CSV já reconhece linhas de água livre (`WATER`/`H2O`), mas ainda mantém
+  a interface simplificada baseada em `molar_flow`. A paridade completa com o
+  Excel para `input_quantity`, `input_basis_type` e `input_unit` será tratada
+  em etapa futura.
+- A expansão da aba `03_COMPONENT_DATABASE` está fora do escopo desta versão e
+  será revisada separadamente.
 
 ## Base de entrada no Excel
 
@@ -75,11 +84,61 @@ partir de sua composição elementar (`C`, `H`, `O`, `N`, `S`). O template Excel
 não permite misturar unidades de entrada diferentes entre linhas da tabela de
 componentes.
 
+## Balanço de água
+
+O BioPot-Gas calcula o termo estequiométrico de água associado à equação de
+Buswell e reporta os campos `H2O_mol`, `H2O_mass` e `H2O_balance_note`.
+
+A convenção adotada é:
+
+- `H2O_mol > 0`: demanda líquida de água;
+- `H2O_mol < 0`: produção líquida de água.
+
+O template Excel também permite informar água livre disponível por meio de uma
+linha especial na tabela de componentes. Linhas com `component_name` igual a
+`WATER`, `H2O`, `ÁGUA` ou `AGUA`, ou com `input_mode = WATER`, são interpretadas
+como água disponível no sistema. Essas linhas não entram no cálculo de Buswell
+como componentes degradáveis; sua quantidade é usada apenas no balanço de água.
+
+O pipeline reporta `water_available_mol`, `net_water_balance_mol`,
+`net_water_balance_mass` e `net_water_balance_note`.
+
+## Unidades de saída
+
+As unidades de saída são padronizadas por dimensão física e escritas na coluna
+de unidade da aba `02_OUTPUTS`.
+
+Para entradas em quantidade, os resultados são reportados em `kmol`, `kg`,
+`Nm³`, `MJ` e `kWh`. Para entradas em vazão, os resultados são reportados em
+`kmol/h`, `kg/h`, `Nm³/h`, `MJ/h` e `kW`.
+
+As unidades de saída não preservam necessariamente a unidade específica de
+entrada. Por exemplo, uma entrada em `g` é convertida internamente e as massas
+de saída são reportadas em `kg`.
+
+## Carbono inerte reportado
+
+O campo `inert_carbon_mol` representa apenas a fração não convertida do carbono
+degradável controlada por `carbon_conversion`.
+
+Componentes marcados como não degradáveis são excluídos do cálculo de Buswell e
+não contribuem para `inert_carbon_mol`. Portanto, esse campo não deve ser
+interpretado como todo o carbono fisicamente inerte presente na alimentação.
+
 ## API CSV para uso sem o template Excel
 
 Além do template Excel, o BioPot-Gas pode ser usado por uma API CSV simples.
 Esse caminho é destinado a uso programático ou automação externa, mantendo o
 núcleo computacional independente do arquivo `.xlsx`.
+
+O leitor CSV aceita a mesma convenção de água livre usada no template Excel.
+Linhas com `name` igual a `WATER`, `H2O`, `ÁGUA` ou `AGUA`, ou com
+`input_mode = WATER`, são interpretadas como água livre disponível. Essas linhas
+são separadas dos componentes enviados ao cálculo de Buswell.
+
+Nesta versão, a API CSV ainda usa a interface simplificada `name` +
+`molar_flow`. A paridade completa com a interface Excel baseada em
+`input_quantity`, `input_basis_type` e `input_unit` será tratada em etapa futura.
 
 Arquivos de exemplo:
 
