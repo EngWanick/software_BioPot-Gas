@@ -35,8 +35,6 @@ O programa gera uma nova planilha com o sufixo `_calculated.xlsx`.
 
 A versão v0.6.1 mantém o modelo numérico da v0.6 e adiciona estabilizações de pipeline, testes automatizados, validações defensivas e metadados de interpretação dos resultados.
 
-O parâmetro `molar_flow` define a base molar usada no cálculo. As grandezas molares mantêm a mesma base da entrada. Quando `molar_flow` é informado em kmol, as saídas de massa podem ser interpretadas em kg e as saídas volumétricas em Nm³.
-
 A classificação da eficiência de conversão experimental usa limites internos do BioPot-Gas: abaixo de 50% indica baixa conversão experimental; de 50% a abaixo de 80% indica conversão intermediária; de 80% a 100% indica conversão elevada; acima de 100% indica necessidade de verificar base experimental, unidade ou composição de entrada. Esses limites são critérios internos de triagem e não representam norma regulatória ou padrão universal.
 
 O parâmetro `carbon_conversion` representa a fração do carbono orgânico degradável destinada à geração de gases. A fração complementar do carbono orgânico degradável é tratada como associada ao crescimento biológico celular.
