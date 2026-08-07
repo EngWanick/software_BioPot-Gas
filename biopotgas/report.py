@@ -82,7 +82,6 @@ def result_to_dict(
         "CH4_to_CO2_molar_ratio": ch4_to_co2,
     }
 
-
 def print_result(result: BiogasResult) -> None:
     """Print a readable summary for a raw BiogasResult.
 

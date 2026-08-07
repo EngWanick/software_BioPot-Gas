@@ -13,6 +13,9 @@
 - Added warnings for Excel output key mismatches between calculated results and the `02_OUTPUTS` template.
 - Documented validation classification thresholds as internal BioPot-Gas criteria.
 - Added documentation for current model assumptions, operational scope, and known limitations.
+- Added support for global molar and mass input bases in the Excel pipeline through `input_basis_type`, `input_unit`, and `input_quantity`.
+- Added mass-based input conversion using molecular weights calculated from elemental composition (`C`, `H`, `O`, `N`, `S`).
+- Added automatic output unit writing in `02_OUTPUTS`, with units reported next to each calculated value.
 
 ### Changed
 - Wrapped the Excel runner in a `main()` entry point.
@@ -21,6 +24,9 @@
 - Removed water from the auxiliary organic component database.
 - Experimental validation output cleanup now uses the existing worksheet extent instead of a fixed 100-row range.
 - Documented `print_result()` as a manual reporting utility outside the Excel pipeline.
+- Replaced the Excel-facing `molar_flow` input concept with the more general `input_quantity` to support both amount and rate inputs on molar or mass bases.
+- Standardized output units by physical dimension instead of preserving the input unit.
+- Energy outputs for rate-based inputs are now reported as `MJ/h` and `kW`.
 
 ### Fixed
 - Active Excel rows with empty `molar_flow` are now rejected.
@@ -34,3 +40,7 @@
 - Water consumption or production in the Buswell balance is not yet explicitly calculated or reported.
 - Automatic unit conversion from declared Excel units is not yet implemented.
 - The Excel reader/writer split still contains legacy overlap and will be consolidated in a future refactor.
+
+### Clarified
+- Documented that `inert_carbon_mol` represents only the unconverted fraction of degradable carbon controlled by `carbon_conversion`.
+- Clarified that non-degradable components are excluded from the Buswell calculation and do not contribute to `inert_carbon_mol`.

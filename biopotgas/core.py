@@ -35,7 +35,11 @@ class BiogasResult:
     nh3_mol: float
     h2s_mol: float
     h2o_mol: float
+
+    # Unconverted carbon from degradable components only.
+    # Non-degradable components are excluded upstream and are not included here.
     inert_carbon_mol: float
+
     c_available_mol: float
     c_total_mol: float
     h_total_mol: float
@@ -140,6 +144,8 @@ def calculate_biogas_from_elements(
         raise ValueError("carbon_conversion must be between 0 and 1.")
 
     c_available = c_mol * carbon_conversion
+
+    # Unconverted fraction of the carbon supplied to this elemental calculation.
     inert_carbon = c_mol * (1.0 - carbon_conversion)
 
     co2 = (
@@ -240,9 +246,9 @@ def calculate_biogas_from_components(
     carbon_conversion:
         Fraction of carbon available for biogas formation.
 
-    Components marked as non-degradable do not enter the Buswell calculation.
     Carbon reported as inert_carbon_mol refers only to the unconverted fraction
-    of degradable carbon controlled by carbon_conversion.
+    of degradable carbon controlled by carbon_conversion. It does not include
+    carbon from components marked as non-degradable.
     """
 
     C = H = O = N = S = 0.0

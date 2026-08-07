@@ -50,6 +50,33 @@ Limitações conhecidas:
 - A conversão automática de unidades declaradas na planilha ainda não está implementada.
 - A separação entre `excel_reader.py` e `excel_writer.py` ainda contém sobreposição legada e será consolidada em refatoração futura.
 
+## Base de entrada no Excel
+
+O template Excel usa uma base de entrada global para a tabela de componentes.
+
+Os campos `input_basis_type` e `input_unit` definem como todos os valores em
+`input_quantity` são interpretados. As bases atualmente suportadas são:
+
+- `molar`: `kmol`, `mol`, `kmol/h`, `mol/h`
+- `mass`: `kg`, `g`, `ton`, `kg/h`, `g/h`, `ton/h`
+
+O valor de `input_quantity` pode representar uma quantidade total ou uma vazão,
+e pode estar expresso em base molar ou mássica. Unidades contendo `/h` são
+interpretadas como vazões; unidades sem `/h` são interpretadas como quantidades
+totais. A base e a unidade selecionadas são aplicadas globalmente a todas as
+linhas ativas da tabela de componentes.
+
+O modelo converte todas as entradas do Excel para uma base molar interna antes
+de executar o cálculo estequiométrico de Buswell:
+
+- entradas em quantidade são convertidas para `kmol`
+- entradas em vazão são convertidas para `kmol/h`
+
+Para entradas em base mássica, a massa molar de cada componente é calculada a
+partir de sua composição elementar (`C`, `H`, `O`, `N`, `S`). O template Excel
+não permite misturar unidades de entrada diferentes entre linhas da tabela de
+componentes.
+
 ## API CSV para uso sem o template Excel
 
 Além do template Excel, o BioPot-Gas pode ser usado por uma API CSV simples.
