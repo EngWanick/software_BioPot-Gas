@@ -1,5 +1,6 @@
-name,molar_flow,formula,degradable
-GLUCOSE,1.0,C6H12O6,true
-XYLOSE,0.5,C5H10O5,true
-PROTEIN_GENERIC,0.2,CH1.57O0.31N0.29S0.007,true
-LIGNIN_GENERIC,0.1,C7.3H13.9O1.3,false
+component_name,input_quantity,input_basis_type,input_unit,formula,degradable,input_mode
+WATER,0,molar,kmol,H2O,false,WATER
+GLUCOSE,1.0,molar,kmol,C6H12O6,true,FORMULA
+XYLOSE,0.5,molar,kmol,C5H10O5,true,FORMULA
+PROTEIN_GENERIC,0.2,molar,kmol,CH1.57O0.31N0.29S0.007,true,FORMULA
+LIGNIN_GENERIC,0.1,molar,kmol,C7.3H13.9O1.3,false,FORMULA

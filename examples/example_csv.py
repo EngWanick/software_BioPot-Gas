@@ -16,6 +16,8 @@ def main() -> None:
 
     print("BioPot-Gas CSV example")
     print(f"components: {len(csv_data.components)}")
+    print(f"input_basis_type: {csv_data.input_basis_type}")
+    print(f"input_unit: {csv_data.input_unit}")
     print(f"water_available_mol: {csv_data.water_available_mol}")
     print(f"CH4_Nm3: {output['CH4_Nm3']:.6f}")
     print(f"total_biogas_Nm3: {output['total_biogas_Nm3']:.6f}")
