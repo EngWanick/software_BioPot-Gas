@@ -16,6 +16,9 @@
 - Added mass-based input conversion using molecular weights calculated from elemental composition (`C`, `H`, `O`, `N`, `S`).
 - Added automatic output unit writing in `02_OUTPUTS`, with units reported next to each calculated value.
 - Added CSV support for free-water rows using the same `WATER`/`H2O` convention used by the Excel pipeline.
+- Added CSV support for the current input contract through `component_name`, `input_quantity`, `input_basis_type`, and `input_unit`.
+- Added backward compatibility for legacy CSV files using `name` and `molar_flow`.
+- Added CSV unit conversion using the same internal molar-basis conversion used by the Excel pipeline.
 
 ### Changed
 - Wrapped the Excel runner in a `main()` entry point.
@@ -46,5 +49,4 @@
 - Clarified that the `03_COMPONENT_DATABASE` expansion is intentionally out of scope for this release and will be reviewed separately.
 
 ### Known limitations
-- CSV input supports free-water rows, but still uses the simplified `molar_flow` interface. Full CSV parity with the Excel `input_quantity`, `input_basis_type`, and `input_unit` contract is planned for a future step.
 - The `03_COMPONENT_DATABASE` expansion is intentionally out of scope for this release and will be reviewed separately.

@@ -50,10 +50,6 @@ A planilha Excel é tratada como template controlado. A leitura atual espera que
 A aba `06_VALIDATION_BENCHMARKS` é preservada na geração da planilha calculada. Seu conteúdo de benchmark não é recalculado pelo pipeline Python nesta versão.
 
 Limitações conhecidas:
-- A API CSV já reconhece linhas de água livre (`WATER`/`H2O`), mas ainda mantém
-  a interface simplificada baseada em `molar_flow`. A paridade completa com o
-  Excel para `input_quantity`, `input_basis_type` e `input_unit` será tratada
-  em etapa futura.
 - A expansão da aba `03_COMPONENT_DATABASE` está fora do escopo desta versão e
   será revisada separadamente.
 
@@ -131,14 +127,19 @@ Além do template Excel, o BioPot-Gas pode ser usado por uma API CSV simples.
 Esse caminho é destinado a uso programático ou automação externa, mantendo o
 núcleo computacional independente do arquivo `.xlsx`.
 
-O leitor CSV aceita a mesma convenção de água livre usada no template Excel.
-Linhas com `name` igual a `WATER`, `H2O`, `ÁGUA` ou `AGUA`, ou com
-`input_mode = WATER`, são interpretadas como água livre disponível. Essas linhas
-são separadas dos componentes enviados ao cálculo de Buswell.
+O leitor CSV aceita o contrato atual de entrada por meio de `component_name`,
+`input_quantity`, `input_basis_type` e `input_unit`, com a mesma lógica de
+conversão usada no Excel. Também mantém compatibilidade com arquivos antigos
+baseados em `name` e `molar_flow`.
 
-Nesta versão, a API CSV ainda usa a interface simplificada `name` +
-`molar_flow`. A paridade completa com a interface Excel baseada em
-`input_quantity`, `input_basis_type` e `input_unit` será tratada em etapa futura.
+As bases suportadas são:
+
+- `molar`: `kmol`, `mol`, `kmol/h`, `mol/h`
+- `mass`: `kg`, `g`, `ton`, `kg/h`, `g/h`, `ton/h`
+
+Linhas com `component_name` ou `name` igual a `WATER`, `H2O`, `ÁGUA` ou `AGUA`,
+ou com `input_mode = WATER`, são interpretadas como água livre disponível. Essas
+linhas são separadas dos componentes enviados ao cálculo de Buswell.
 
 Arquivos de exemplo:
 
